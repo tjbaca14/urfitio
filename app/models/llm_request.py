@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from app.models.chat import Message
 
 
-class ClaudeRequest(BaseModel):
+class LLMRequest(BaseModel):
     model: str
     max_tokens: int
     system: str
