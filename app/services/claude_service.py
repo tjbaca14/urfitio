@@ -10,6 +10,7 @@ from app.util import get_logger
 
 logger = get_logger(__name__)
 
+
 class ClaudeAPI:
 
     def __init__(self, config: ClaudeConfig, http_client: httpx.AsyncClient) -> None:
@@ -27,7 +28,7 @@ class ClaudeAPI:
         system = """Use the provided context to answer the usery query.
                     If the question cannot be answered from the provided context do not answer, inform the user as such and prompt a new question.
                     If a user asks a question pertaining for themselves ask for more data to answer the questino to the best of your ability.
-                    """ # TODO: fix system prompt
+                    """  # TODO: fix system prompt
 
         claude_request = ClaudeRequest(
             model=self._config.MODEL,
@@ -43,7 +44,8 @@ class ClaudeAPI:
 
         try:
             response = await self._http_client.post(
-                url=self._config.URL, headers=headers, json=data, timeout=None)
+                url=self._config.URL, headers=headers, json=data, timeout=None
+            )
             response.raise_for_status()
             return response.json()
         except Exception as e:

@@ -7,6 +7,7 @@ class Message(BaseModel):
     role: str
     content: str
 
+
 class ChatRequest(BaseModel):
     id: str
     contextKey: str

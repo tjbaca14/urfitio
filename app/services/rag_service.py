@@ -1,9 +1,12 @@
-from app.services.claude_service import ClaudeAPI
-from app.models.chat import ChatRequest, Message
 from typing import Dict
 
+from app.models.chat import ChatRequest, Message
+from app.services.claude_service import ClaudeAPI
 
-async def rag_service(cache: Dict[str, str], chat_request: ChatRequest, claude_api: ClaudeAPI) -> Message:
+
+async def rag_service(
+    cache: Dict[str, str], chat_request: ChatRequest, claude_api: ClaudeAPI
+) -> Message:
     # retrieve context
     messages = chat_request.messages
     context = cache.get(chat_request.contextKey)

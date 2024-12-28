@@ -1,9 +1,10 @@
-import pathlib
 import json
-from typing import List
+import pathlib
 import uuid
-from typing import Dict
+from typing import Dict, List
+
 from app.models.school import School
+
 
 async def create_cache() -> Dict[str, str]:
     cache_dir = pathlib.Path(__file__).resolve().parent.parent.parent
