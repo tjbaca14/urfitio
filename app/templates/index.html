@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UrFitIO</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- Welcome message -->
+    <div id="welcome-message">
+        UrFitIO
+    </div>
+
+    <!-- Dropdown for selecting a school -->
+    <div id="coach-dropdown-container">
+        <label for="coach-dropdown">Select a school to learn more!</label>
+        <select id="coach-dropdown">
+            <!-- Options will be populated dynamically from the backend -->
+        </select>
+    </div>
+
+    <!-- Chips for common questions -->
+    <div id="chips-container">
+        <div class="chip" onclick="setQuestion('Provide a summary of this coach.')">Provide a summary of this coach.</div>
+        <div class="chip" onclick="setQuestion('How does this coach compare to his peers?')">How does this coach compare to his peers?</div>
+        <div class="chip" onclick="setQuestion('Describe the attributes of pitcher recruits.')">Describe the attributes of pitcher recruits.</div>
+        <div class="chip" onclick="setQuestion('Am I a good fit for this coach?')">Am I a good fit for this coach?</div>
+    </div>
+
+    <!-- Chat container -->
+    <div id="chat-container">
+        <!-- Messages will be dynamically appended here -->
+    </div>
+
+    <!-- Input container -->
+    <div id="input-container">
+        <input type="text" id="user-input" placeholder="Type your message...">
+        <button id="send-button">Send</button>
+    </div>
+
+    <script>
+        let userId = null;
+        let chatId = null;
+        let chatHistory = [];
+    
+        const sendButton = document.getElementById('send-button');
+        const userInput = document.getElementById('user-input');
+        const chatContainer = document.getElementById('chat-container');
+        const coachDropdown = document.getElementById('coach-dropdown');
+    
+        // Function to generate a unique ID
+        function generateUniqueId(prefix) {
+            return `${prefix}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        }
+    
+        // Function to initialize a new chat session
+        function initializeChatSession() {
+            if (!userId) {
+                userId = localStorage.getItem('userId') || generateUniqueId('user');
+                localStorage.setItem('userId', userId);
+            }
+            chatId = generateUniqueId('chat');
+            chatHistory = [];
+            console.log(`New chat session started: ${chatId}`);
+    
+            // Fetch the list of schools from the backend when the page loads
+            fetchSchools();
+        }
+    
+        // Function to fetch schools from the backend
+        async function fetchSchools() {
+            try {
+                const response = await fetch('/api/v1/schools');
+                const schools = await response.json();
+                populateSchoolDropdown(schools);
+            } catch (error) {
+                console.error('Error fetching schools:', error);
+                alert('Failed to load schools data. Please try again later.');
+            }
+        }
+    
+        // Function to populate the school dropdown with fetched school data
+        function populateSchoolDropdown(schools) {
+            // Clear existing options
+            coachDropdown.innerHTML = '<option value="">Select a school</option>';
+    
+            // Add each school as an option in the dropdown
+            schools.forEach(school => {
+                const option = document.createElement('option');
+                option.value = school.name;  // Set the value to the school name
+                option.textContent = school.name;  // Display the school name
+                coachDropdown.appendChild(option);
+            });
+        }
+    
+        // Function to append a new message to the chat container
+        function appendMessage(role, message) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', role === 'user' ? 'user' : 'assistant');
+            
+            const messageText = document.createElement('div');
+            messageText.classList.add('message-text');
+            
+            // Replace newlines with <br> tags to display them correctly in the UI
+            messageText.innerHTML = message.replace(/\n/g, '<br>');  // Convert newlines to <br>
+            
+            messageDiv.appendChild(messageText);
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight; // Scroll to the bottom
+        }
+    
+        // Function to send a message to the backend
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            const selectedSchoolName = coachDropdown.value;  // Get the selected school name
+    
+            // Check if a school is selected
+            if (!selectedSchoolName) {
+                // If no school is selected, show a pop-up message and exit the function
+                alert("Please select a school to begin the chat.");
+                return;
+            }
+    
+            if (message) {
+                // Append the user message to the chat container
+                appendMessage('user', message);
+    
+                // Add the user message to the chat history
+                chatHistory.push({ role: 'user', content: message });
+    
+                // Clear the input field
+                userInput.value = '';
+    
+                try {
+                    // Send the message, chat history, and selected school name to the backend
+                    const response = await fetch('/api/v1/chat', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            userId,
+                            id: chatId,
+                            messages: chatHistory,
+                            contextKey: selectedSchoolName  // Send the selected school name
+                        })
+                    });
+    
+                    const data = await response.json();
+    
+                    if (response.ok && data.role && data.content) {
+                        // Append the assistant's response to the chat container
+                        appendMessage(data.role, data.content);
+    
+                        // Add the assistant's response to the chat history
+                        chatHistory.push(data);
+                    } else {
+                        console.error('Invalid or unsuccessful response from backend:', data);
+                        // Inform the user of the failure
+                        appendMessage('assistant', 'Sorry, something went wrong. Please try again.');
+                    }
+                } catch (error) {
+                    console.error('Error communicating with backend:', error);
+                    // Inform the user of the error
+                    appendMessage('assistant', 'There was an error with the chat service. Please try again.');
+                }
+            }
+        }
+    
+        // Function to populate the input field with a clicked question and auto-send it
+        function setQuestion(question) {
+            userInput.value = question;
+            sendMessage(); // Automatically send the message when a chip is clicked
+        }
+    
+        // Initialize chat session on page load
+        window.onload = initializeChatSession;
+    
+        // Listen for button click to send message
+        sendButton.addEventListener('click', sendMessage);
+    
+        // Listen for Enter key press to send message
+        userInput.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+    
+</body>
+</html>

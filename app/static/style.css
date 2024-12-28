@@ -1,0 +1,212 @@
+/* General styles */
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: #0f172a;
+    color: #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    line-height: 1.5;
+    min-height: 100vh;
+    margin: 0;
+}
+
+#welcome-message {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 2rem;
+    text-align: center;
+    color: #f8fafc;
+    letter-spacing: -0.025em;
+}
+
+/* Layout container to hold dropdown and chips */
+#main-container {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 1200px;
+    margin-bottom: 2rem;
+    padding: 0 1rem;
+    flex-wrap: wrap;
+}
+
+/* Dropdown container */
+#coach-dropdown-container {
+    margin-bottom: 2rem;  /* Space between dropdown and chips */
+    flex-basis: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.dropdown-label {
+    font-size: 1.25rem;
+    color: #e2e8f0;
+}
+
+.dropdown {
+    padding: 0.75rem;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #e2e8f0;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 1rem; /* Rounded corners for a sleek look */
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Add shadow for depth */
+}
+
+.dropdown:hover {
+    border-color: #3b82f6;
+    background-color: rgba(59, 130, 246, 0.1); /* Subtle background change on hover */
+}
+
+.dropdown:focus {
+    outline: none;
+    border-color: #3b82f6;
+    background-color: rgba(59, 130, 246, 0.1);
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.3); /* Add focus glow */
+}
+
+/* Chips for common questions */
+#chips-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: flex-start;
+    margin-bottom: 2rem;
+    flex-basis: 100%;  /* Ensure full width for chips */
+}
+
+.chip {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #e2e8f0;
+    padding: 0.75rem 1.25rem;
+    border-radius: 9999px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.chip:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Chat container */
+#chat-container {
+    width: 100%;
+    max-width: 768px;
+    margin-bottom: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0 1rem;
+    flex-grow: 1;
+    overflow-y: auto;
+    max-height: calc(100vh - 300px);
+}
+
+/* Message styling */
+.message {
+    display: flex;
+    max-width: 85%;
+    padding: 1rem 1.25rem;
+    border-radius: 1rem;
+    word-wrap: break-word;
+    line-height: 1.5;
+    position: relative;
+    animation: fadeIn 0.3s ease;
+}
+
+.message.user {
+    background-color: #3b82f6;
+    color: #ffffff;
+    align-self: flex-end;
+    margin-left: auto;
+    border-bottom-right-radius: 0.25rem;
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.1);
+}
+
+.message.assistant {
+    background-color: #1e293b;
+    color: #f8fafc;
+    align-self: flex-start;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom-left-radius: 0.25rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.message-text {
+    max-width: 100%;
+    word-wrap: break-word;
+}
+
+/* Input container */
+#input-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 768px;
+    gap: 1rem;
+    background-color: #1e293b;
+    padding: 1rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    position: sticky;
+    bottom: 1rem;
+    margin: 0 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+#user-input {
+    flex-grow: 1;
+    padding: 0.875rem 1.25rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 0.75rem;
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #f8fafc;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+}
+
+#user-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+#send-button {
+    padding: 0.875rem 1.25rem;
+    background-color: #3b82f6;
+    color: white;
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#send-button:hover {
+    background-color: #2563eb;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
