@@ -10,3 +10,4 @@ class LLMRequest(BaseModel):
     max_tokens: int
     system: str
     messages: List[Message]
+    temperature: float

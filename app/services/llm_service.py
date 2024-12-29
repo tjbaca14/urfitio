@@ -28,7 +28,7 @@ class LLMApi(BaseApi):
         system = """Use the provided context to answer the usery query.
                     If the question cannot be answered from the provided context do not answer, inform the user as such and prompt a new question.
                     If a user asks a question pertaining for themselves ask for more data to answer the questino to the best of your ability.
-                    """  # TODO: fix system prompt
+                    """  # noqa: E501
 
         llm_request = LLMRequest(
             model=self._config.MODEL,

@@ -9,4 +9,4 @@ class LLMConfig(BaseSettings):
     TEMPERATURE: float
 
 
-llm_config = LLMConfig()
+llm_config = LLMConfig()  # type: ignore

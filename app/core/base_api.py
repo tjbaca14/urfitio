@@ -1,8 +1,10 @@
 import logging
 from abc import ABC, abstractmethod
+from typing import Any, Coroutine
 
 import httpx
 from fastapi import HTTPException
+
 
 class BaseApi(ABC):
 
@@ -10,7 +12,7 @@ class BaseApi(ABC):
         self._http_client = http_client
 
     @abstractmethod
-    async def generate(self):
+    async def generate(self) -> Coroutine[Any, Any, Any]:
         pass
 
     async def _post(
