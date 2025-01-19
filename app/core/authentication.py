@@ -3,7 +3,6 @@ from typing import List
 
 from fastapi import Depends, HTTPException, Request, Response, status
 from jose import ExpiredSignatureError, JWTError, jwt
-from jwt import InvalidTokenError, DecodeError
 
 from app.core.config import auth_settings
 from app.utils import get_logger
@@ -44,9 +43,9 @@ def decode_jwt(token: str):
         return decoded
     except ExpiredSignatureError:
         raise ValueError("Invalid token")
-    except DecodeError:
+    except JWTError:
         raise ValueError("Invalid token")
-    except InvalidTokenError:
+    except Exception:
         raise ValueError("Invalid token")
 
 def decode_and_validate_token(

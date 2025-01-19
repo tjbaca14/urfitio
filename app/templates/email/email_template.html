@@ -1,13 +1,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
-    <!-- jQuery (required by Toastr v2.1.4) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <!-- Toastr JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios@0.21.1/dist/axios.min.js"></script>
-    <script type="module" src="/static/interceptor.js"></script>
     <style>
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -90,7 +83,7 @@
         <div class="content">
             <p>Welcome to UrFit.io! Thanks for joining our community!</p>
             <p>Please verify your email to activate your account:</p>
-            <button class="verify-button" id="verify-button">Verify Email</button>
+            <a href="{{ verification_link }}" class="verify-button">Verify Email</a>
         </div>
         <!-- Footer Section -->
         <div class="footer">
@@ -102,33 +95,5 @@
             </p>
         </div>
     </div>
-
-    <script type="module">
-        import { apiClient } from '/static/interceptor.js';
-
-        document.addEventListener("DOMContentLoaded", () => {
-            const verifyButton = document.getElementById('verify-button');
-
-            verifyButton.addEventListener('click', async () => {
-                const email = "{{ email }}"; // Pass email dynamically
-                const token = "{{ token }}"; // Pass token dynamically
-
-                try {
-                    const response = await apiClient.get('/email-verification/verify', {
-                        params: { email, token },
-                    });
-
-                    if (response.status === 200) {
-                        toastr.success('Email verification successful!', 'Success');
-                    } else {
-                        toastr.error('Failed to verify email. Please try again.', 'Error');
-                    }
-                } catch (error) {
-                    console.error(error);
-                    toastr.error('An error occurred while verifying your email. Please try again.', 'Error');
-                }
-            });
-        });
-    </script>
 </body>
 </html>
