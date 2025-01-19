@@ -1,0 +1,147 @@
+/* Footer Styling */
+#site-footer {
+    background-color: #1e293b;
+    color: #e2e8f0;
+    padding: 20px 20px; /* Slightly larger padding for a standard footer */
+    text-align: center;
+    width: 100%; /* Ensure it spans the full width of the screen */
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2); /* Optional shadow for visibility */
+    font-size: 0.8rem;
+    line-height: 1.4; /* Standard line height */
+    margin-top: 20px; /* Add some space between the footer and the content above */
+}
+
+/* Adjust content in the footer */
+.footer-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center; /* Vertically align items */
+    gap: 10px; /* Maintain spacing between sections */
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+body {
+    margin: 0;
+    padding: 0; /* Remove any extra padding */
+    min-height: 100vh; /* Ensure body takes up full height of the viewport */
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1; /* Allow the main content to take up remaining space above the footer */
+}
+
+/* Footer Links and Content */
+.footer-container > div {
+    flex: 1;
+    min-width: 200px;
+}
+
+.footer-container h3 {
+    font-size: 1.2rem;
+    margin-bottom: 16px;
+    color: #f8fafc;
+}
+
+.footer-container p,
+.footer-container ul {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: #94a3b8;
+}
+
+.footer-container ul {
+    list-style: none;
+    padding: 0;
+}
+
+.footer-container ul li {
+    margin-bottom: 8px;
+}
+
+.footer-container ul li a {
+    color: #60a5fa;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.footer-container ul li a:hover {
+    color: #3b82f6;
+}
+
+.footer-social .social-icons {
+    display: flex;
+    flex-direction: column; /* Stack items vertically */
+    align-items: center; /* Center items horizontally */
+    gap: 10px; /* Spacing between items */
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.footer-social .social-icons li {
+    display: inline-flex;
+    align-items: center;
+}
+
+.footer-social .social-icons li a {
+    color: #60a5fa;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.footer-social .social-icons li a:hover {
+    color: #3b82f6;
+}
+
+/* Icon Styling */
+.footer-social .social-icons li .icon {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.footer-social .social-icons li .x-icon {
+    background-image: url('/static/images/x.jpg'); /* Replace with Twitter logo */
+}
+
+.footer-social .social-icons li .instagram-icon {
+    background-image: url('/static/images/instagram_png.jpg'); /* Replace with Instagram logo */
+}
+
+.footer-social .social-icons li .youtube-icon {
+    background-image: url('/static/images/youtube.png'); /* Replace with Instagram logo */
+}
+
+.footer-bottom {
+    margin-top: 10px; /* Space between footer sections */
+    border-top: 1px solid #334155;
+    padding-top: 10px;
+    font-size: 0.75rem; /* Smaller text for the bottom section */
+    color: #94a3b8;
+}
+
+.footer-contact p {
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: #94a3b8;
+}
+
+.footer-contact a {
+    color: #60a5fa;
+    text-decoration: none;
+}
+
+.footer-contact a:hover {
+    color: #3b82f6;
+}

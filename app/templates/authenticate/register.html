@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  
+  <!-- Your custom CSS -->
+  <link rel="stylesheet" href="/static/css/style.css" />
+  
+  <!-- Toastr CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+
+  <!-- jQuery (required by Toastr v2.1.4) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  
+  <!-- Toastr JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+  
+  <!-- Axios -->
+  <script src="https://cdn.jsdelivr.net/npm/axios@0.21.1/dist/axios.min.js"></script>
+
+  <!-- Load interceptor.js as a module -->
+  <script type="module" src="/static/interceptor.js"></script>
+  
+  <title>UrFit.io</title>
+  <style>
+    .signup-container {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      max-width: 450px;
+      width: 100%;
+      margin: 120px auto;
+    }
+    .signup-container h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+    .signup-container p {
+      font-size: 1rem;
+      margin-bottom: 20px;
+    }
+    .signup-container label {
+      display: block;
+      font-weight: bold;
+      margin: 10px 0 5px;
+      text-align: left;
+    }
+    .signup-container input,
+    .signup-container select {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      box-sizing: border-box;
+      height: 44px; /* Ensures uniform height */
+      background-repeat: no-repeat;
+      background-position: right 0.75rem center;
+      background-size: 1.25rem;
+    }
+    .signup-container button {
+      background: #ffffff;
+      color: #000000;
+      font-size: 1rem;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+    .signup-container button:hover {
+      background: #ffffff;
+      color: #000000;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+    .signup-container a {
+      display: block;
+      margin-top: 10px;
+      color: #ffffff;
+      text-decoration: underline;
+      font-size: 0.9rem;
+    }
+    #message-container {
+      padding: 10px;
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+      border-radius: 5px;
+    }
+    .hidden {
+      display: none;
+    }
+
+.terms-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 15px;
+  font-size: 0.8rem; /* Slightly smaller font size for TOS text */
+  color: #475569;
+}
+
+.terms-container label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.terms-container input[type="checkbox"] {
+  width: 12px; /* Slightly smaller checkbox */
+  height: 12px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 3px;
+  appearance: none;
+  outline: none;
+  background-color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.terms-container input[type="checkbox"]:hover {
+  border-color: #1d4ed8;
+}
+
+.terms-container input[type="checkbox"]:checked {
+  background-color: #1d4ed8;
+  border-color: #1d4ed8;
+  background-image: url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white"%3E%3Cpath stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/%3E%3C/svg%3E');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 8px; /* Adjusted for smaller checkbox */
+}
+
+.terms-container a {
+  color: inherit; /* Matches the text color */
+  text-decoration: underline;
+  font-size: 0.8rem; /* Matches the smaller font size */
+}
+
+.terms-container a:hover {
+  text-decoration: none;
+}
+
+
+ 
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav id="navbar">
+    <div class="navbar-logo">
+      <a href="/">UrFit.io</a>
+    </div>
+  </nav>
+
+  <div class="signup-container">
+    <h1>Create Your Free Account</h1>
+    <p>To help UrFit find your fit, sign up and fill out our questionnaire!</p>
+
+    <!-- Signup Form -->
+    <form id="signup-form">
+      <!-- Username -->
+      <label for="username">Email:</label>
+      <input
+        type="text"
+        name="username"
+        id="username"
+        placeholder="Enter your email"
+        required
+      />
+
+      <!-- Password (secure: at least 8 characters) -->
+      <label for="password">Password:</label>
+      <input
+        type="password"
+        name="password"
+        id="password"
+        placeholder="Create a password"
+        required
+        minlength="8"
+      />
+
+      <!-- Persona Dropdown -->
+      <label for="persona">Persona:</label>
+      <select name="persona" id="persona" required>
+        <option value="" disabled selected>Select your persona</option>
+        <option value="current-player">Current Player</option>
+        <option value="former-player">Former Player</option>
+        <option value="parent">Parent</option>
+        <option value="coach">Coach</option>
+      </select>
+
+      <!-- PLAYER Fields -->
+      <div id="player-fields" class="hidden">
+        <label for="player-status">Player status</label>
+        <select name="player-status" id="player-status">
+          <option value="" disabled selected>Select your player status</option>
+          <option value="pre-high-school">Pre-High school</option>
+          <option value="high-school">High school</option>
+          <option value="college">College</option>
+          <option value="professional">Professional</option>
+        </select>
+
+        <label for="primary-position">Primary Position:</label>
+        <select name="primary-position" id="primary-position">
+          <option value="" disabled selected>Select your position</option>
+          <option value="Pitcher">Pitcher</option>
+          <option value="Catcher">Catcher</option>
+          <option value="Infielder">Infielder</option>
+          <option value="Infielder">First Base</option>
+          <option value="Outfielder">Outfielder</option>
+          <option value="Outfielder">Utility</option>
+        </select>
+
+        <label for="goals">Goals/Next-Level Aspirations:</label>
+        <select name="goals" id="goals">
+          <option value="" disabled selected>What are your next-level aspirations?</option>
+          <option value="Professional">Play professionally</option>
+          <option value="College Scholarship">Play D1 baseball</option>
+          <option value="High School Team">Play anywhere</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <!-- FORMER PLAYER Fields -->
+      <div id="former-player-fields" class="hidden">
+        <label for="former-player-status">Player status</label>
+        <select name="former-player-status" id="former-player-status">
+          <option value="" disabled selected>Highest level played</option>
+          <option value="pre-high-school">High school</option>
+          <option value="high-school">College</option>
+          <option value="college">Professional</option>
+        </select>
+
+        <label for="former-primary-position">Primary Position:</label>
+        <select name="former-primary-position" id="former-primary-position">
+          <option value="" disabled selected>Select your position</option>
+          <option value="Pitcher">Pitcher</option>
+          <option value="Catcher">Catcher</option>
+          <option value="Infielder">Infielder</option>
+          <option value="Infielder">First Base</option>
+          <option value="Outfielder">Outfielder</option>
+          <option value="Outfielder">Utility</option>
+        </select>
+      </div>
+
+      <!-- COACH Fields -->
+      <div id="coach-fields" class="hidden">
+        <label for="coach-level">Coaching Level:</label>
+        <select name="coach-level" id="coach-level">
+          <option value="" disabled selected>What level do you coach?</option>
+          <option value="Little League">Little League</option>
+          <option value="High School">High School</option>
+          <option value="College">College</option>
+          <option value="Professional">Professional</option>
+        </select>
+
+        <label for="experience">Years of Experience:</label>
+        <select name="experience" id="experience">
+          <option value="" disabled selected>Your coaching experience</option>
+          <option value="1-3">1-3 Years</option>
+          <option value="4-6">4-6 Years</option>
+          <option value="7-10">7-10 Years</option>
+          <option value="10+">10+ Years</option>
+        </select>
+      </div>
+
+
+      <!-- Hidden message container (no longer used for errors) -->
+      <div id="message-container" class="hidden"></div>
+
+      <div class="terms-container">
+        <input type="checkbox" id="terms" name="terms" required>
+        <label for="terms">
+          I agree to the 
+          <a href="/terms-of-service" target="_blank">Terms of Service</a> and 
+          <a href="/privacy-policy" target="_blank">Privacy Policy</a>.
+        </label>
+      </div>
+  
+
+      <button type="submit">Sign Up</button>
+    </form>
+
+    <a href="/login">Already have an account? Log in</a>
+  </div>
+
+  <script type="module">
+    import { apiClient } from '/static/interceptor.js';
+    
+    const form = document.getElementById('signup-form');
+    const personaSelect = document.getElementById('persona');
+    
+    const playerFields = document.getElementById('player-fields');
+    const formerPlayerFields = document.getElementById('former-player-fields');
+    const coachFields = document.getElementById('coach-fields');
+    const messageContainer = document.getElementById('message-container'); // We'll keep the reference, but not use it for errors anymore
+
+    // Show/hide persona-specific fields
+    personaSelect.addEventListener('change', () => {
+      const persona = personaSelect.value;
+      
+      // Hide all persona-specific sections first
+      playerFields.style.display = 'none';
+      coachFields.style.display = 'none';
+      formerPlayerFields.style.display = 'none';
+
+      // Show only the relevant section
+      if (persona === 'current-player') {
+        playerFields.style.display = 'block';
+      } else if (persona === 'coach') {
+        coachFields.style.display = 'block';
+      } else if (persona === 'former-player') {
+        formerPlayerFields.style.display = 'block';
+      }
+    });
+
+    // Handle form submission
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const termsCheckbox = document.getElementById('terms');
+
+      if (!termsCheckbox.checked) {
+        toastr.error('You must agree to the Terms of Service and Privacy Policy.', 'Error');
+        return;
+      }
+      
+      // Collect base fields
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      const persona = personaSelect.value;
+
+      // Build personaData object
+      let personaData = {};
+      if (persona === 'current-player') {
+        personaData.playerStatus = document.getElementById('player-status').value;
+        personaData.primaryPosition = document.getElementById('primary-position').value;
+        personaData.goals = document.getElementById('goals').value;
+      } else if (persona === 'coach') {
+        personaData.coachLevel = document.getElementById('coach-level').value;
+        personaData.experience = document.getElementById('experience').value;
+      } else if (persona === 'former-player') {
+        personaData.playerStatus = document.getElementById('former-player-status').value;
+        personaData.primaryPosition = document.getElementById('former-primary-position').value;
+      }
+
+      // Basic client-side checks (optional)
+      if (!username) {
+        toastr.error('Username cannot be empty.', 'Error');
+        return;
+      }
+      if (!persona) {
+        toastr.error('Please select a persona.', 'Error');
+        return;
+      }
+
+      // If your server expects multipart/form-data:
+      const formData = new FormData();
+      formData.append('username', username);
+      formData.append('password', password);
+      formData.append('persona', persona);
+      formData.append('meta', JSON.stringify(personaData));
+      formData.append('tos', true)
+
+      try {
+        // Submit the form data using Axios
+        const registerResponse = await apiClient.post('/api/v1/register', formData);
+
+        // Extract email and token from the response
+        const { email, token } = registerResponse.data;
+
+        // Send email verification request
+        await apiClient.post('/email-verification/send', { email, token });
+
+        // If successful, redirect
+        window.location.href = `/email-verification/pending?email=${email}`;
+      } catch (error) {
+        console.error(error);
+
+        // Instead of showing a text message, show a Toastr error
+        if (error.response?.status === 409) {
+          toastr.error(
+            'Username already taken. Please select a different username.',
+            'Error'
+          );
+        } else {
+          toastr.error('Signup failed. Please try again.', 'Error');
+        }
+      }
+    });
+  </script>
+</body>
+</html>

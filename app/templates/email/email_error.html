@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email Verification Error</title>
+  <style>
+    /* General styles */
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #0f172a;
+      color: #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      line-height: 1.5;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      text-align: center;
+      background-color: #1e293b;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      max-width: 500px;
+      width: 100%;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: #ef4444; /* Error color */
+    }
+
+    p {
+      margin-bottom: 1.5rem;
+    }
+
+    .action-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .link-button {
+      display: inline-block;
+      padding: 0.75rem 1.5rem;
+      background-color: #3b82f6;
+      color: #ffffff;
+      text-decoration: none;
+      font-weight: bold;
+      border-radius: 5px;
+      transition: background-color 0.3s ease;
+    }
+
+    .link-button:hover {
+      background-color: #2563eb;
+    }
+
+    .link-button-secondary {
+      background-color: #6b7280; /* Secondary button color */
+    }
+
+    .link-button-secondary:hover {
+      background-color: #4b5563;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>❌ Verification Error</h1>
+    <p>We encountered an issue verifying your email. The verification link may have expired or is invalid.</p>
+    <div class="action-buttons">
+      <a href="/register" class="link-button">Back to signup</a>
+    </div>
+  </div>
+</body>
+</html>

@@ -27,3 +27,15 @@ def get_logger(name: str) -> logging.Logger:
     logger.addHandler(console_handler)
 
     return logger
+
+
+class AuthenticationError(Exception):
+    pass
+
+
+class RegistrationError(Exception):
+    pass
+
+
+class EntityNotFoundError(Exception):
+    pass

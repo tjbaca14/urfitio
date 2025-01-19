@@ -2,15 +2,17 @@ from contextlib import asynccontextmanager
 
 import httpx
 import uvicorn
-from fastapi import FastAPI, Request, Response
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, Response
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 
+from app.routers.auth_router import auth_router
 from app.routers.chat_router import chat_router
 from app.routers.crud_router import crud_router
+from app.routers.template_router import template_router
+from app.routers.email_router import email_router
 from app.services.cache_service import create_cache
-from app.util import get_logger
+from app.startup import init_db
+from app.utils import get_logger
 
 logger = get_logger(__name__)
 
@@ -19,6 +21,7 @@ logger = get_logger(__name__)
 async def lifespan(app: FastAPI):
     # TODO: modularize
     app.state.cache = await create_cache()
+    app.state.db = init_db()
     async with httpx.AsyncClient() as client:
         logger.info("Setting up HTTP client...")
         app.state.http_client = client  # singleton
@@ -31,14 +34,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(tags=["RecruitIO"], lifespan=lifespan)
 
-templates = Jinja2Templates(directory="app/templates")
-
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
-
-
-@app.get("/", response_class=HTMLResponse)
-async def get_main_page(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
 
 
 @app.get("/health")
@@ -48,6 +44,9 @@ async def health_check():
 
 app.include_router(crud_router)
 app.include_router(chat_router)
+app.include_router(auth_router)
+app.include_router(template_router)
+app.include_router(email_router)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios@0.21.1/dist/axios.min.js"></script>
+  <script type="module" src="/static/interceptor.js"></script>
+  <title>Verify Your Email</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0; 
+      padding: 0;
+      display: flex; 
+      flex-direction: column; 
+      justify-content: center; 
+      align-items: center;
+      height: 100vh;
+      background: #f0f0f0;
+    }
+
+    .container {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+      text-align: center;
+      max-width: 450px;
+      width: 100%;
+    }
+
+    h1 {
+      margin-bottom: 1rem;
+    }
+
+    p {
+      margin-bottom: 1.5rem;
+    }
+
+    button {
+      background: #007BFF;
+      border: none;
+      border-radius: 5px;
+      padding: 0.7rem 1.2rem;
+      font-size: 1rem;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    .note {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Check Your Email!</h1>
+    <p>We’ve just sent a verification email to your address. Please click the link in that email to activate your account.</p>
+    <p>If you don’t see an email, check your spam folder.</p>
+
+    <button id="resendBtn">Resend Verification Email</button>
+    <p class="note">Didn’t receive the email? Try resending.</p>
+  </div>
+  <script type="module">
+    import { apiClient } from '../static/interceptor.js';
+    
+     
+    const resendBtn = document.getElementById('resendBtn');
+
+    const email = '{{ email }}'
+
+    resendBtn.addEventListener('click', async () => {
+      try {
+        // Make a POST request to your endpoint that resends verification
+        // (Adjust the URL or method as needed for your back-end)
+        const response = await apiClient.post('/email-verification/send', {email: email}, {
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.status === 200) {
+          toastr.success('Verification email resent! Check your inbox again.', 'Success');
+        } else {
+          toastr.error('Error resending email. Please contact support.', 'Error');
+        }
+      } catch (error) {
+        toastr.error('Failed to resend verification email. Please try again or contact support.', 'Error');
+      }
+    });
+  </script> 
+</body>
+</html>
+
