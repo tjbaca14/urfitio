@@ -67,16 +67,16 @@ async def login(
     response.set_cookie(
         "access_token",
         user.access_token,
-        httponly=False,
-        secure=False,
+        httponly=True,
+        secure=True,
         max_age=auth_settings.access_token_expire_minutes * 60,
         samesite="Strict",
     )
     response.set_cookie(
         "refresh_token",
         user.refresh_token,
-        httponly=False,
-        secure=False,
+        httponly=True,
+        secure=True,
         max_age=auth_settings.refresh_token_expire_days * 86400,
         samesite="Strict",
     )

@@ -169,7 +169,8 @@ async def verify_or_refresh(
             key="access_token",
             value=new_access,
             httponly=True,
-            # secure=True, samesite="strict", etc. in production #TODO: FIX BEFORE PROD
+            secure=True,
+            samesite="Strict"
         )
         return username
     except HTTPException:

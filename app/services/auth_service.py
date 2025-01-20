@@ -42,10 +42,10 @@ class AuthenticationService:
         scope: str = "user",
     ) -> UserAuthenticated:
         user = await get_user_by_username(db_session=db_session, username=username)
-        logger.info(f"USER {user}")
+        # logger.info(f"USER {user}")
         if user:
             password_verified = self._verify_password(password, user.password_hash)
-            logger.info(f"password verified {password_verified}")
+            # logger.info(f"password verified {password_verified}")
         if not user or not password_verified or not user.is_verified:
             logger.info("Bad creds")
             raise AuthenticationError
