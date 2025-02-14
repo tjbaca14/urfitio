@@ -6,7 +6,7 @@ from app.core.base_api import BaseApi
 from app.core.config import LLMConfig
 from app.models.chat import Message
 from app.models.llm_request import LLMRequest
-from app.util import get_logger
+from app.utils import get_logger
 
 logger = get_logger(__name__)
 
@@ -25,8 +25,8 @@ class LLMApi(BaseApi):
             "anthropic-version": "2023-06-01",
             "Content-Type": "application/json",
         }
-        system = """Use the provided context to answer the usery query.
-                    If the question cannot be answered from the provided context do not answer, inform the user as such and prompt a new question.
+        system = """Use the context in <data> xml tags to answer the usery query.
+                    If the user query cannot be determine from the context do not answer, inform the user as such and prompt a new question.
                     If a user asks a question pertaining for themselves ask for more data to answer the questino to the best of your ability.
                     """  # noqa: E501
 

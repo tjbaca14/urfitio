@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - UrFit</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+<style>
+/* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: #0f172a;
+    color: #e2e8f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    line-height: 1.5;
+    min-height: 100vh;
+    margin: 0;
+}
+
+/* About Page Container */
+#about-page {
+    width: 90%;
+    max-width: 900px; /* Increased max width */
+    padding: 30px;
+    background-color: #1e293b;
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    margin-top: 100px; /* Moves the entire container below the header */
+}
+
+/* Section Styling */
+.section {
+    margin-bottom: 40px;
+}
+
+.section h2 {
+    font-size: 2rem; /* Larger font size for headings */
+    margin-bottom: 16px;
+    color: #f8fafc;
+    letter-spacing: 0.05em;
+}
+
+.section p {
+    font-size: 1rem;
+    color: #94a3b8;
+    margin-bottom: 20px;
+}
+
+/* Employee Section */
+#employees {
+    display: flex;
+    flex-direction: column;
+    gap: 40px; /* Increased spacing between employees */
+    align-items: center;
+    flex-grow: 1; /* Allows the employee section to take up more space */
+    margin-bottom: 60px;
+}
+
+.employee {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #0f172a;
+    padding: 30px; /* Larger padding for a spacious look */
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    text-align: left;
+    flex-grow: 1; /* Expands the employee sections */
+}
+
+.profile-pic {
+    width: 120px; /* Increased size for profile pictures */
+    height: 120px;
+    border-radius: 50%;
+    background-color: #94a3b8;
+    background-size: cover;
+    background-position: center;
+    margin-bottom: 16px;
+}
+
+#employee1-pic {
+    background-image: url('/static/images/tucker.png')
+}
+
+#employee2-pic {
+    background-image: url('/static/images/kyler.png');
+}
+
+.employee-info {
+    width: 100%; /* Allows text to occupy full width */
+}
+
+.employee-info h3 {
+    margin: 0 0 12px;
+    font-size: 1.8rem; /* Larger name font for emphasis */
+    color: #f8fafc;
+}
+
+.employee-info p {
+    margin: 0;
+    font-size: 1rem;
+    color: #cbd5e1;
+    line-height: 1.8; /* Improved readability for longer text */
+}
+
+
+</style>
+</head>
+<body>
+    {% include 'navbar.html' %}
+
+    <div id="about-page">
+        <div class="section" id="our-mission">
+            <h2>Our Mission</h2>
+            <p>
+                In the world of amateur sports, players and parents often invest significant time and effort 
+                into marketing themselves to coaches and scouts. The narrative pushed by the industry suggests 
+                that athletes "need" their services—when, in truth, the reality is quite the opposite: 
+                <strong>they need you</strong>.
+            </p>
+            <p>
+                At <strong>UrFit.io</strong>, we combine our experience as former amateur and professional athletes 
+                with cutting-edge technology to empower young athletes. Our goal is to provide the knowledge and 
+                insights necessary for making informed career decisions, helping them take their game 
+                to the next level with confidence and clarity.
+            </p>
+        
+        <div class="section" id="employees">
+            <h2>Meet Our Team</h2>
+            <div class="employee">
+                <div class="profile-pic" id="employee1-pic"></div>
+                <div class="employee-info">
+                    <h3>Tucker Baca, Co-Founder & Founding Engineer</h3>
+                    <p>
+                        Tucker is the founding engineer of <strong>UrFit.io</strong>, a platform born from his passion for technology, sports, and a desire to empower young athletes to make informed career decisions. A former collegiate baseball player at Arizona State University and St. Katherine's, Tucker also played professionally for the Baltimore Orioles in the MiLB. His tumultuous baseball career, marked by uninformed decisions and missed opportunities, became the driving force behind creating UrFit.io.
+                    </p>
+                    <p>
+                        With a degree in Mathematics from ASU and extensive experience as a Machine Learning/AI engineer and architect, Tucker leverages cutting-edge technology to solve complex problems. UrFit.io bridges the worlds of athletics and innovation, providing athletes with the insights and tools needed to make smarter decisions and achieve their goals. For Tucker, UrFit.io is more than a platform—it's a personal mission to help the next generation of athletes avoid the challenges he once faced.
+                    </p>                               
+                </div>
+            </div>
+            <div class="employee">
+                <div class="profile-pic" id="employee2-pic"></div>
+                <div class="employee-info">
+                    <h3>Kyler Berrett, Co-Founder</h3>
+                    <p>
+                        Kyler is a lifelong baseball enthusiast and former Georgia state champion who excelled as an undersized shortstop in high school. Despite a standout career, he experienced the challenges of finding the right collegiate fit, sparking his passion for creating <strong>UrFit.io</strong>. Drawing from his personal journey, Kyler is dedicated to empowering athletes with the tools and insights needed to make informed, data-driven decisions that align with their athletic and academic goals. 
+                    
+                        Outside of baseball, Kyler thrives in business, holding a degree in Economics from BYU and an MBA from SMU.
+                    </p>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    {% include 'footer.html' %}
+</body>
+</html>

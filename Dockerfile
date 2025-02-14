@@ -11,15 +11,26 @@ RUN apt-get update && apt-get install -y \
 
 RUN pip install poetry
 
-COPY pyproject.toml poetry.lock ./
-
-RUN poetry install 
+COPY pyproject.toml poetry.lock README.md ./
 
 COPY ./app app
 
+COPY ./alembic /alembic
+
+COPY ./alembic.ini ./
+
 COPY ./data /data
 
+COPY ./startup.sh /startup.sh
 
-# Command to run the FastAPI app with Uvicorn
+
+RUN chmod +x /startup.sh
+
+RUN poetry install 
+
+# For debug 
 # CMD ["tail", "-f", "/dev/null"]
-CMD ["poetry", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80"]
+
+CMD ["/startup.sh"]
+
+

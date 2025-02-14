@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List
 
 from pydantic import BaseModel
@@ -10,6 +11,8 @@ class Message(BaseModel):
 
 class ChatRequest(BaseModel):
     id: str
-    contextKey: str
+    userId: str
+    contextQuery: dict[str, str] | None = None
     messages: List[Message]
     metadata: dict | None = None
+    createdDate: datetime | None = None
