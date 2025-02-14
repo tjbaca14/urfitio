@@ -1,8 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
+from fastapi import (APIRouter, Depends, HTTPException, Query, Request,
+                     Response, status)
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
-from app.core.authentication import verify_or_refresh_factory, verify_access_token
+from app.core.authentication import (verify_access_token,
+                                     verify_or_refresh_factory)
 from app.utils import get_logger
 
 logger = get_logger(__name__)
@@ -15,7 +17,10 @@ scopes = ["user"]
 
 verify_or_refresh_dep = Depends(verify_or_refresh_factory(required_scopes=scopes))
 
-async def validate_user_access_token(email: str = Query(...), token:str = Query(...)) -> str:
+
+async def validate_user_access_token(
+    email: str = Query(...), token: str = Query(...)
+) -> str:
     try:
         token = verify_access_token(token)
         if token.get("sub") == email:
@@ -25,6 +30,7 @@ async def validate_user_access_token(email: str = Query(...), token:str = Query(
             status_code=status.HTTP_302_FOUND,
             headers={"Location": "/password-reset-request"},
         )
+
 
 @template_router.get("/", dependencies=[verify_or_refresh_dep])
 async def redirect_user(request: Request):
@@ -51,7 +57,8 @@ async def get_main_page(
 
 
 @template_router.get(
-    "/about", response_class=HTMLResponse, 
+    "/about",
+    response_class=HTMLResponse,
     # dependencies=[verify_or_refresh_dep]
 )
 async def get_about_page(request: Request):
@@ -65,7 +72,9 @@ async def get_login_page(request: Request):
 
 @template_router.get("/email-verification/pending", response_class=HTMLResponse)
 async def get_verify_page(request: Request, email: str = Query(...)):
-    return templates.TemplateResponse("/email/email_pending.html", {"request": request, "email": email})
+    return templates.TemplateResponse(
+        "/email/email_pending.html", {"request": request, "email": email}
+    )
 
 
 @template_router.get("/email-verification/success", response_class=HTMLResponse)
@@ -95,38 +104,45 @@ async def get_signup_page(request: Request):
 
 
 @template_router.get("/password-reset-request", response_class=HTMLResponse)
-async def get_password_reset_request_page(request: Request,
-                          ):
+async def get_password_reset_request_page(
+    request: Request,
+):
     return templates.TemplateResponse(
         "/authenticate/password_reset_request.html", {"request": request}
     )
 
+
 @template_router.get("/password-reset", response_class=HTMLResponse)
-async def get_password_reset(request: Request,
-                             token: dict = Depends(validate_user_access_token)
-                          ):
-        return templates.TemplateResponse(
-            "/authenticate/password_reset.html", {"request": request}
-        )
+async def get_password_reset(
+    request: Request, token: dict = Depends(validate_user_access_token)
+):
+    return templates.TemplateResponse(
+        "/authenticate/password_reset.html", {"request": request}
+    )
 
 
 @template_router.get("/verify-email", response_class=HTMLResponse)
 async def get_verify_email_page(request: Request):
     return templates.TemplateResponse(
         "/email/email_template.html",
-        {"request": request, "verification_link": "something", "email": "abcde"},
+        {"request": request},
     )
 
+
 @template_router.get("/terms-of-service", response_class=HTMLResponse)
-async def get_password_reset(request: Request,
-                          ):
-        return templates.TemplateResponse(
-            "/tos.html", {"request": request}
-        )
+async def get_password_reset(
+    request: Request,
+):
+    return templates.TemplateResponse("/tos.html", {"request": request})
+
 
 @template_router.get("/privacy-policy", response_class=HTMLResponse)
-async def get_password_reset(request: Request,
-                          ):
-        return templates.TemplateResponse(
-            "/pp.html", {"request": request}
-        )
+async def get_password_reset(request: Request):
+    return templates.TemplateResponse("/pp.html", {"request": request})
+
+
+@template_router.get(
+    "/data-sources", response_class=HTMLResponse, dependencies=[verify_or_refresh_dep]
+)
+async def get_data_sources_pag(request: Request):
+    return templates.TemplateResponse("/data_sources.html", {"request": request})

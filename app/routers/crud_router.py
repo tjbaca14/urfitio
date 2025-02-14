@@ -18,7 +18,8 @@ crud_router = APIRouter(prefix="/api/v1", tags=["CRUD"])
 )
 async def get_schools(
     response: Response,
-    division: str = Query(...), cache: dict = Depends(get_cache),
+    division: str = Query(...),
+    cache: dict = Depends(get_cache),
     user: str = Depends(verify_or_refresh_factory(required_scopes=["user"])),
 ) -> List[School]:
     resp = await get_school_names(cache=cache, division=division)

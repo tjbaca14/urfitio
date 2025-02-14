@@ -11,7 +11,7 @@ async def create_cache() -> Dict[str, Dict[str, str]]:
     cache_path = f"{cache_dir}/data/index.json"
     with open(cache_path, "r") as f:
         cache = json.load(f)
-    
+
     return cache
 
 

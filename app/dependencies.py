@@ -5,7 +5,8 @@ import httpx
 from fastapi import Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import EmailSettings, LLMConfig, email_settings, llm_config
+from app.core.config import (EmailSettings, LLMConfig, email_settings,
+                             llm_config)
 from app.services.auth_service import AuthenticationService
 from app.services.email_service import EmailService
 from app.services.llm_service import LLMApi
@@ -59,4 +60,6 @@ async def get_email_service(
     email_client: boto3.client = Depends(get_email_client),
     email_settings: EmailSettings = Depends(get_email_settings),
 ) -> EmailService:
-    return EmailService(email_client, email_settings.source_email, email_settings.source_domain)
+    return EmailService(
+        email_client, email_settings.source_email, email_settings.source_domain
+    )

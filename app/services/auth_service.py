@@ -1,31 +1,25 @@
-from datetime import datetime
 import uuid
+from datetime import datetime
 from typing import Union
 
 import pytz
 from fastapi import HTTPException, status
 from fastapi.responses import JSONResponse
 from passlib.context import CryptContext
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.authentication import create_access_token
 from app.core.config import auth_settings
-from app.data_access.user_crud import (
-    get_user_by_username,
-    save_user,
-    save_user_profile,
-    update_password,
-)
-from app.models.auth_models import (
-    RegisterForm,
-    UserAuthenticated,
-    UserRegistered,
-    PasswordResetRequest,
-)
-from app.utils import AuthenticationError, RegistrationError, EntityNotFoundError
-from sqlalchemy.exc import IntegrityError
-from app.utils import get_logger
+from app.data_access.user_crud import (get_user_by_username, save_user,
+                                       save_user_profile, update_password)
+from app.models.auth_models import (PasswordResetRequest, RegisterForm,
+                                    UserAuthenticated, UserRegistered)
+from app.utils import (AuthenticationError, EntityNotFoundError,
+                       RegistrationError, get_logger)
+
 logger = get_logger(__name__)
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
@@ -41,15 +35,18 @@ class AuthenticationService:
         password: str,
         scope: str = "user",
     ) -> UserAuthenticated:
+        username = username.lower()  # FIXME
         user = await get_user_by_username(db_session=db_session, username=username)
         # logger.info(f"USER {user}")
         if user:
+            logger.info(f"Found user, {user.username}")
             password_verified = self._verify_password(password, user.password_hash)
-            # logger.info(f"password verified {password_verified}")
-        if not user or not password_verified or not user.is_verified:
-            logger.info("Bad creds")
-            raise AuthenticationError
 
+        if not user or not password_verified or not user.is_verified:
+            logger.info(
+                f"Bad creds for user: {user}, password_verified: {password_verified}, is_verified: {user.is_verified}"
+            )
+            raise AuthenticationError
         return UserAuthenticated(
             username=username,
             access_token=create_access_token(

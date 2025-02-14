@@ -51,9 +51,9 @@ class EmailSettings(BaseSettings):
     source_email: str
     source_domain: str
     SMTP_SERVER: str
-    SMTP_PORT: int # TLS
+    SMTP_PORT: int  # TLS
     SMTP_USERNAME: str
-    SMTP_PASSWORD:  str
+    SMTP_PASSWORD: str
 
 
 llm_config = LLMConfig()  # type: ignore

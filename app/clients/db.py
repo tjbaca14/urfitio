@@ -2,12 +2,8 @@ import contextlib
 import logging
 from typing import AsyncIterator
 
-from sqlalchemy.ext.asyncio import (
-    AsyncConnection,
-    AsyncSession,
-    async_sessionmaker,
-    create_async_engine,
-)
+from sqlalchemy.ext.asyncio import (AsyncConnection, AsyncSession,
+                                    async_sessionmaker, create_async_engine)
 
 
 class PostgresDB:

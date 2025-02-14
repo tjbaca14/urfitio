@@ -8,8 +8,8 @@ from fastapi.staticfiles import StaticFiles
 from app.routers.auth_router import auth_router
 from app.routers.chat_router import chat_router
 from app.routers.crud_router import crud_router
-from app.routers.template_router import template_router
 from app.routers.email_router import email_router
+from app.routers.template_router import template_router
 from app.services.cache_service import create_cache
 from app.startup import init_db
 from app.utils import get_logger

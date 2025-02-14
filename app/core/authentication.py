@@ -9,11 +9,12 @@ from app.utils import get_logger
 
 logger = get_logger(__name__)
 
-'''
+"""
 Theres some wonkinees due to SSR and browser interaction.
 The core to do Ouath2 is here. 
 Will refactor when we move to proper UI framework
-'''
+"""
+
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
     to_encode = data.copy()
@@ -37,9 +38,12 @@ def get_token_from_cookies(request: Request, token_name: str) -> str:
         )
     return token
 
+
 def decode_jwt(token: str):
     try:
-        decoded = jwt.decode(token, auth_settings.SECRET_KEY, algorithms=[auth_settings.ALGORITHM])
+        decoded = jwt.decode(
+            token, auth_settings.SECRET_KEY, algorithms=[auth_settings.ALGORITHM]
+        )
         return decoded
     except ExpiredSignatureError:
         raise ValueError("Invalid token")
@@ -47,6 +51,7 @@ def decode_jwt(token: str):
         raise ValueError("Invalid token")
     except Exception:
         raise ValueError("Invalid token")
+
 
 def decode_and_validate_token(
     token: str,
@@ -95,6 +100,7 @@ def get_refresh_token(request: Request) -> str:
 
 def get_access_token(request: Request) -> str:
     return get_token_from_cookies(request, "access_token")
+
 
 def verify_refresh_token(
     refresh_token: str = Depends(get_refresh_token),
@@ -170,7 +176,7 @@ async def verify_or_refresh(
             value=new_access,
             httponly=True,
             secure=True,
-            samesite="Strict"
+            samesite="Strict",
         )
         return username
     except HTTPException:

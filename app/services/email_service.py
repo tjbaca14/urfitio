@@ -1,4 +1,10 @@
+import smtplib
+from datetime import datetime
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
 import boto3
+import pytz
 from botocore.exceptions import ClientError
 from jinja2 import Template
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -7,20 +13,15 @@ from app.core.authentication import create_access_token, decode_jwt
 from app.core.config import auth_settings, email_settings
 from app.data_access.user_crud import get_user_by_username, save_user_verify
 from app.models.email_verification import EmailVerificationRequest
-from app.utils import AuthenticationError
-from datetime import datetime
-
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-
-import pytz
-from app.utils import get_logger
+from app.utils import AuthenticationError, get_logger
 
 logger = get_logger(__name__)
 
+
 class EmailService:
-    def __init__(self, ses_client: boto3.client, source_email: str, source_domain) -> None:
+    def __init__(
+        self, ses_client: boto3.client, source_email: str, source_domain
+    ) -> None:
         self.ses_client = ses_client
         self.source_email = source_email
         self.source_domain = source_domain
@@ -61,7 +62,9 @@ class EmailService:
             Facebook: https://facebook.com/urfit.io
             Twitter: https://twitter.com/urfit_io
             """
-            html_body = html_template.render(email=email, verification_link=verification_link)
+            html_body = html_template.render(
+                email=email, verification_link=verification_link
+            )
 
             await self._send_email(email, subject, text_body, html_body)
 
@@ -70,12 +73,7 @@ class EmailService:
         logger.info("no email sent")
         # raise AuthenticationError
 
-    async def verify_email(
-        self,
-        db_session: AsyncSession,
-        email: str, 
-        token: str
-    ):
+    async def verify_email(self, db_session: AsyncSession, email: str, token: str):
         try:
             token: dict = decode_jwt(token)
             # if the token is valid, mark user as valid and return true
@@ -101,50 +99,60 @@ class EmailService:
                 self.source_email,
             )
 
-    async def send_password_reset_email(self, db_session, template: Template, email: dict):
-        email = email.get('email')
+    async def send_password_reset_email(
+        self, db_session, template: Template, email: dict
+    ):
+        email = email.get("email")
         user = await get_user_by_username(db_session, email)
         logger.info(f"user {user}")
         if user.username:
             token = create_access_token(
                 data={"sub": email, "scope": "email"},
-                    expires_delta=auth_settings.signup_token_expire_minutes,
+                expires_delta=auth_settings.signup_token_expire_minutes,
             )
-            
-            reset_link = f"{self.source_domain}/password-reset?email={email}&token={token}"
+
+            reset_link = (
+                f"{self.source_domain}/password-reset?email={email}&token={token}"
+            )
             html_body = template.render(reset_link=reset_link)
             text_body = f"""
                 Hello {email}
                 Reset your password from the link below:
                 {reset_link}
                 """
-            await self._send_email(email, "UrFit.io Password reset", text_body, html_body)
+            await self._send_email(
+                email, "UrFit.io Password reset", text_body, html_body
+            )
 
-    async def _send_email(self, email: str, subject: str, text_body: str, html_body: str):
-            msg = MIMEMultipart("alternative")
-            msg["From"] = f"UrFit.io <{self.source_email}>"
-            msg["To"] = email
-            msg["Subject"] = subject
-            msg.attach(MIMEText(text_body, "plain"))
-            msg.attach(MIMEText(html_body, "html"))
-            try:
-                with smtplib.SMTP(email_settings.SMTP_SERVER, email_settings.SMTP_PORT) as server:
-                    server.starttls()
-                    server.login(email_settings.SMTP_USERNAME, email_settings.SMTP_PASSWORD)
-                    server.sendmail(self.source_email, email, msg.as_string())
-                    print("Email sent successfully!")
-            except Exception as e:
-                print(f"Failed to send email: {e}")
-
-
-
+    async def _send_email(
+        self, email: str, subject: str, text_body: str, html_body: str
+    ):
+        msg = MIMEMultipart("alternative")
+        msg["From"] = f"UrFit.io <{self.source_email}>"
+        msg["To"] = email
+        msg["Subject"] = subject
+        msg.attach(MIMEText(text_body, "plain"))
+        msg.attach(MIMEText(html_body, "html"))
+        try:
+            with smtplib.SMTP(
+                email_settings.SMTP_SERVER, email_settings.SMTP_PORT
+            ) as server:
+                server.starttls()
+                server.login(email_settings.SMTP_USERNAME, email_settings.SMTP_PASSWORD)
+                server.sendmail(self.source_email, email, msg.as_string())
+                print("Email sent successfully!")
+        except Exception as e:
+            print(f"Failed to send email: {e}")
 
 
 import boto3
-ses = boto3.client('ses', region_name='us-west-2')  # Adjust region if needed
+
+ses = boto3.client("ses", region_name="us-west-2")  # Adjust region if needed
 from jinja2 import Environment, FileSystemLoader
 
-template_loader = FileSystemLoader(searchpath="app/templates")  # Directory where your template is located
+template_loader = FileSystemLoader(
+    searchpath="app/templates"
+)  # Directory where your template is located
 template_env = Environment(loader=template_loader)
 template = template_env.get_template("/email/email_template.html")
 print(template)

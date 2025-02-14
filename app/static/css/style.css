@@ -84,7 +84,7 @@ body {
     padding: 10px 15px;
     /* background-color: #60a5fa; */
     color: white;
-    text-decoration: none;
+    text-decoration: underline;
     border-radius: 5px;
     transition: background-color 0.3s ease;
 }

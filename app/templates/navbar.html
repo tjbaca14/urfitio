@@ -127,6 +127,7 @@
         <div class="navbar-links">
             <a href="/chat">Home</a>
             <a href="/about">About</a>
+            <!-- <a href="/data-sources" id="data-sources">Data</a> -->
         </div>
             <a href="#" class="logout-link">Logout</a>
     </nav>
@@ -137,9 +138,10 @@
     import {apiClient} from './static/interceptor.js'
     document.addEventListener("DOMContentLoaded", () => {
         const logoutLink = document.querySelector(".logout-link");
-
+        const dataSources = document.getElementById("data-sources")
         if (window.location.pathname === "/login") {
             logoutLink.style.visibility = "hidden";
+            
             // logoutLink.style.display = "none";
         }
         logoutLink.addEventListener("click", async (event) => {

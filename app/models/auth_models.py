@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, field_validator
 
 
 class UserAuthenticated(BaseModel):
@@ -13,6 +13,14 @@ class RegisterForm(BaseModel):
     persona: str
     tos: bool
     meta: dict
+
+    @field_validator("username")
+    @classmethod
+    def validate_username(cls, v: str, info) -> str:
+        if isinstance(v, str):
+            v = v.lower()
+            return v
+        return v
 
 
 class UserRegistered(BaseModel):

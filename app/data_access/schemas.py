@@ -1,7 +1,8 @@
-from sqlalchemy import JSON, TIMESTAMP, Column, String, Boolean
+from sqlalchemy import JSON, TIMESTAMP, Boolean, Column, String
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
+
 
 class Feedback(Base):
     __tablename__ = "feedback"
@@ -54,6 +55,7 @@ class CoachIndex(Base):
     coach_id = Column(String, primary_key=True, index=True)
     division = Column(String)
     data = Column(JSON)
+
 
 class ChatHistory(Base):
     __tablename__ = "chat_history"

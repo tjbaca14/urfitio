@@ -6,15 +6,12 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import auth_settings
-from app.dependencies import get_auth_service, get_db_no_commit_session, get_db_session
-from app.models.auth_models import RegisterForm, PasswordResetRequest
+from app.dependencies import (get_auth_service, get_db_no_commit_session,
+                              get_db_session)
+from app.models.auth_models import PasswordResetRequest, RegisterForm
 from app.services.auth_service import AuthenticationService
-from app.utils import (
-    AuthenticationError,
-    RegistrationError,
-    EntityNotFoundError,
-    get_logger,
-)
+from app.utils import (AuthenticationError, EntityNotFoundError,
+                       RegistrationError, get_logger)
 
 logger = get_logger(__name__)
 auth_router = APIRouter(tags=["Authenticate"], prefix="/api/v1")
@@ -29,7 +26,11 @@ async def parse_register_form(
 ) -> RegisterForm:
     try:
         return RegisterForm(
-            username=username, password=password, persona=persona, meta=json.loads(meta), tos=tos
+            username=username,
+            password=password,
+            persona=persona,
+            meta=json.loads(meta),
+            tos=tos,
         )
 
     except Exception as e:
@@ -98,7 +99,7 @@ async def register_user(
     auth_service: AuthenticationService = Depends(get_auth_service),
     db_session: AsyncSession = Depends(get_db_no_commit_session),
 ):
-    logger.info(f"Recieved signup request for {register_form}")
+    logger.info(f"Recieved signup request for {register_form.username}")
     try:
         user = await auth_service.register_user(
             db_session=db_session, register_form=register_form, role="user"
@@ -118,7 +119,6 @@ async def register_user(
 async def reset_password(
     password_reset_request: PasswordResetRequest,
     db_session: AsyncSession = Depends(get_db_session),
-    
     auth_service: AuthenticationService = Depends(get_auth_service),
 ):
     try:

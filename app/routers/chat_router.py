@@ -1,14 +1,15 @@
 from typing import Dict
 
 from fastapi import APIRouter, Depends, Response
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.authentication import verify_or_refresh_factory
-from app.dependencies import get_cache, get_llm_api, get_db_session
+from app.dependencies import get_cache, get_db_session, get_llm_api
 from app.models.chat import ChatRequest, Message
-from app.services.llm_service import LLMApi
 from app.services.chat_service import rag_service, save_chat_service
+from app.services.llm_service import LLMApi
 from app.utils import get_logger
-from sqlalchemy.ext.asyncio import AsyncSession
+
 logger = get_logger(__name__)
 
 chat_router = APIRouter(
@@ -28,6 +29,7 @@ async def chat_endpoint(
     # logger.info(f"Input messages: {chat_request}")
     resp = await rag_service(cache=cache, chat_request=chat_request, llm_api=llm_api)
     return resp
+
 
 @chat_router.post("/save/chat", response_model=ChatRequest)
 async def chat_endpoint(
