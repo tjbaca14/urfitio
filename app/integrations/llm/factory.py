@@ -1,7 +1,7 @@
 from app.common.clients.http_client import HTTPClient
-from app.settings import LLMConfig
 from app.integrations.llm.anthropic import AnthropicProvider
 from app.integrations.llm.base import BaseLLMProvider
+from app.settings import LLMConfig
 
 
 class LLMProviderFactory:

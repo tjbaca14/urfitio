@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+
 from pydantic_settings import BaseSettings
 
 
@@ -35,6 +36,6 @@ class AppSettings:
 
 def create_app_settings() -> AppSettings:
     return AppSettings(
-        llm_config=LLMConfig(), # type: ignore
-        db_settings=DBSettings(), # type: ignore
+        llm_config=LLMConfig(),  # type: ignore
+        db_settings=DBSettings(),  # type: ignore
     )

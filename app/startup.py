@@ -4,7 +4,6 @@ import httpx
 
 from app.common.clients.db import PostgresDB
 from app.common.clients.http_client import HTTPClient
-from app.integrations import create_cache
 from app.integrations.llm import BaseLLMProvider, LLMProviderFactory
 from app.settings import AppSettings, create_app_settings
 from app.utils import get_logger
@@ -41,9 +40,6 @@ class ApplicationContainer:
 
         # Database
         self.db = PostgresDB(pg_url=app_settings.db_settings.url)
-
-        # Cache
-        self.cache = await create_cache()
 
         # LLM Provider
         self.llm_provider = LLMProviderFactory.create(

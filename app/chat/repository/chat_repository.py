@@ -5,8 +5,10 @@ from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.db_model import ChatHistory
-from ..models.dto import ChatHistoryCreateDTO, ChatHistoryDTO, ChatHistoryUpdateDTO
 from app.common.repository import BaseRepository
+
+from ..models.dto import (ChatHistoryCreateDTO, ChatHistoryDTO,
+                          ChatHistoryUpdateDTO)
 
 
 class ChatRepository(BaseRepository[ChatHistory]):

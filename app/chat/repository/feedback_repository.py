@@ -4,8 +4,9 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.db_model import Feedback
-from ..models.dto import FeedbackCreateDTO, FeedbackDTO
 from app.common.repository import BaseRepository
+
+from ..models.dto import FeedbackCreateDTO, FeedbackDTO
 
 
 class FeedbackRepository(BaseRepository[Feedback]):

@@ -2,18 +2,20 @@ import contextlib
 import logging
 from typing import AsyncIterator
 
-from sqlalchemy.ext.asyncio import (
-    AsyncConnection,
-    AsyncSession,
-    async_sessionmaker,
-    create_async_engine,
-)
+from sqlalchemy.ext.asyncio import (AsyncConnection, AsyncSession,
+                                    async_sessionmaker, create_async_engine)
 
 
 class PostgresDB:
 
     def __init__(self, pg_url: str) -> None:
-        self._engine = create_async_engine(url=pg_url)
+        self._engine = create_async_engine(
+            url=pg_url,
+            pool_pre_ping=True,
+            pool_size=5,
+            max_overflow=10,
+            echo=False,
+        )
         self._sessionmaker = async_sessionmaker(autocommit=False, bind=self._engine)
 
     async def close(self):

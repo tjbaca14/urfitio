@@ -5,12 +5,9 @@ import pytz
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.chat.models.api import ChatRequest
+from app.chat.models.dto import (ChatHistoryCreateDTO, ChatHistoryDTO,
+                                 ChatHistoryUpdateDTO)
 from app.common.models import Message
-from app.chat.models.dto import (
-    ChatHistoryCreateDTO,
-    ChatHistoryDTO,
-    ChatHistoryUpdateDTO,
-)
 from app.utils import get_logger
 
 from .repository import ChatRepository

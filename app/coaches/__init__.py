@@ -1,9 +1,9 @@
 from .repository import CoachRepository
-from .routes import coach_router
+from .routes import schools_router
 from .service import CoachService
 
 __all__ = [
     "CoachService",
-    "coach_router",
+    "schools_router",
     "CoachRepository",
 ]

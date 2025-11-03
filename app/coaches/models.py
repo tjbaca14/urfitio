@@ -3,26 +3,27 @@ from typing import Optional
 from pydantic import BaseModel, ConfigDict
 
 
-class CoachIndexDTO(BaseModel):
-    """DTO for CoachIndex entity"""
+# Response models
+class DivisionDTO(BaseModel):
+    """Division resource representation."""
 
     model_config = ConfigDict(from_attributes=True)
-
-    coach_id: str
-    division: Optional[str] = None
-    data: dict
+    id: str
+    division_type: str
 
 
-class CoachIndexCreateDTO(BaseModel):
-    """DTO for creating coach index"""
-
-    coach_id: str
-    division: Optional[str] = None
-    data: dict
+class DivisionResponse(DivisionDTO):
+    pass
 
 
-class CoachIndexUpdateDTO(BaseModel):
-    """DTO for updating coach index"""
+class SchoolDTO(BaseModel):
+    """School resource representation."""
 
-    division: Optional[str] = None
-    data: Optional[dict] = None
+    model_config = ConfigDict(from_attributes=True)
+    id: str
+    name: str
+    division: str
+
+
+class SchoolResponse(SchoolDTO):
+    pass

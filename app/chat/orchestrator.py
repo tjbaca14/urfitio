@@ -3,12 +3,11 @@ from typing import Dict, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.chat.models.api import ChatRequest
-from app.common.models import Message
 from app.chat.repository import ChatRepository
 from app.chat.services import ConversationService
+from app.common.models import Message
 from app.integrations.llm.base import BaseLLMProvider
-from app.rag import PromptBuilder
-from app.rag import RAGPipeline
+from app.rag import PromptBuilder, RAGPipeline
 from app.rag.retriever import ContextRetriever
 from app.utils import get_logger
 
