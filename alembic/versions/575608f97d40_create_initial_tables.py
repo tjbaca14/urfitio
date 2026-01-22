@@ -26,7 +26,6 @@ def upgrade():
         sa.Column('messages', sa.JSON()),
         sa.Column('created_date', sa.TIMESTAMP(timezone=True)),
         sa.Column('updated_date', sa.TIMESTAMP(timezone=True)),
-        schema="app"
     )
 
     op.create_table(
@@ -36,47 +35,28 @@ def upgrade():
         sa.Column('feedback', sa.String(), index=True),
         sa.Column('category', sa.String()),
         sa.Column('created_date', sa.TIMESTAMP(timezone=True)),
-        schema="app"
     )
 
     op.create_table(
-        'users',
-        sa.Column('user_id', sa.String()),
-        sa.Column('username', sa.String(), primary_key=True, index=True),
-        sa.Column('password_hash', sa.String()),
-        sa.Column('metadata', sa.JSON()),
-        sa.Column('role', sa.String()),
-        sa.Column('tos', sa.Boolean(), nullable=False),
-        sa.Column('is_verified', sa.Boolean()),
+        'division',
+        sa.Column('id', sa.String(), primary_key=True, index=True),
+        sa.Column('division_type', sa.String(), nullable=False)
+    )
+
+    op.create_table(
+        'school',
+        sa.Column('id', sa.String(), primary_key=True),
+        sa.Column('division_id', sa.String(), nullable=False),
+        sa.Column('name', sa.String(), nullable=False),
+        sa.Column('context', sa.String()),
         sa.Column('created_date', sa.TIMESTAMP(timezone=True)),
-        sa.Column('updated_date', sa.TIMESTAMP(timezone=True), nullable=True),
-        schema="priv"
-    )
-    op.create_table(
-        'user_profile',
-        sa.Column('user_id', sa.String(), primary_key=True, index=True),
-        sa.Column('persona', sa.String()),
-        sa.Column('created_date', sa.TIMESTAMP(timezone=True)),
-        sa.Column('meta', sa.JSON()),
-        schema="priv"
-
-    )
-
-    # Create CoachIndex table in the default schema
-    op.create_table(
-        'coach_index',
-        sa.Column('coach_id', sa.String(), primary_key=True, index=True),
-        sa.Column('division', sa.String()),
-        sa.Column('data', sa.JSON()),
-        schema="app"
+        # Foreign key constraint
+        sa.ForeignKeyConstraint(['division_id'], ['division.id'], ondelete='CASCADE'),
     )
 
 
 def downgrade():
-    # Drop tables in reverse order to maintain integrity
-    op.drop_table('coach_index', schema="app")
-    op.drop_table('chat_history', schema="app")
-    op.drop_table('feedback', schema="app")
-    op.drop_table('users', schema="priv")
-    op.drop_table('user_profile', schema="priv")
-
+    op.drop_table('school')
+    op.drop_table('division')
+    op.drop_table('feedback')
+    op.drop_table('chat_history')

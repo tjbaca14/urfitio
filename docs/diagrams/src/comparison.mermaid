@@ -1,0 +1,73 @@
+graph TB
+    subgraph "ANTI-PATTERN: Special-Cased Design"
+        A1[Client Request]
+
+        A2[SchoolChatEndpoint]
+        A3[ProductChatEndpoint]
+        A4[LegalChatEndpoint]
+
+        A1 --> A2
+        A1 --> A3
+        A1 --> A4
+
+        A2 --> A5[SchoolChatApplicationService<br/>Hard-coded logic]
+        A3 --> A6[ProductChatApplicationService<br/>Duplicated logic]
+        A4 --> A7[LegalChatApplicationService<br/>Copy-pasted logic]
+
+        A5 --> A8[school_repository.get]
+        A5 --> A9[Anthropic API call<br/>Hard-coded]
+        A5 --> A10[Format prompt<br/>Inline strings]
+
+        A6 --> A11[product_repository.get]
+        A6 --> A12[Anthropic API call<br/>Hard-coded]
+        A6 --> A13[Format prompt<br/>Inline strings]
+
+        A7 --> A14[legal_repository.get]
+        A7 --> A15[Anthropic API call<br/>Hard-coded]
+        A7 --> A16[Format prompt<br/>Inline strings]
+
+        A9 --> A17[anthropic.messages.create]
+        A12 --> A17
+        A15 --> A17
+
+        style A2 fill:#ffcdd2
+        style A3 fill:#ffcdd2
+        style A4 fill:#ffcdd2
+        style A5 fill:#ef9a9a
+        style A6 fill:#ef9a9a
+        style A7 fill:#ef9a9a
+    end
+
+    subgraph "PROPER ABSTRACTION: Generic Design"
+        B1[Client Request]
+
+        B2[Unified Chat Endpoint<br/>routes.py]
+        B1 --> B2
+
+        B2 --> B3[ChatOrchestrator<br/>Domain-agnostic]
+
+        B3 --> B4[RAGPipeline<br/>Generic algorithm]
+
+        B4 --> B5[Retriever Protocol<br/>Abstract interface]
+        B4 --> B6[PromptBuilder<br/>Configurable]
+        B4 --> B7[BaseLLMProvider<br/>Strategy interface]
+
+        B5 -.->|inject| B8[SchoolRetriever]
+        B5 -.->|inject| B9[ProductRetriever]
+        B5 -.->|inject| B10[LegalRetriever]
+
+        B7 -.->|inject| B11[AnthropicProvider]
+        B7 -.->|inject| B12[OpenAIProvider]
+        B7 -.->|inject| B13[LocalLLMProvider]
+
+        B11 --> B14[Provider Factory<br/>Config-driven]
+        B12 --> B14
+        B13 --> B14
+
+        style B2 fill:#c8e6c9
+        style B3 fill:#a5d6a7
+        style B4 fill:#81c784
+        style B5 fill:#66bb6a
+        style B6 fill:#66bb6a
+        style B7 fill:#66bb6a
+    end

@@ -1,0 +1,69 @@
+graph TB
+    subgraph "Input"
+        A[messages: List Message]
+        B[context_key: Optional str]
+    end
+
+    subgraph "RAG Pipeline - Generic Algorithm"
+        C[RAGPipeline]
+
+        subgraph "Step 1: RETRIEVE"
+            D[Retriever Protocol]
+            D1[retrieve query]
+            D --> D1
+        end
+
+        subgraph "Step 2: AUGMENT"
+            E[PromptBuilder]
+            E1[format_user_message]
+            E --> E1
+        end
+
+        subgraph "Step 3: ENSURE SYSTEM"
+            F[System Prompt]
+            F1[Prepend if absent]
+            F --> F1
+        end
+
+        subgraph "Step 4: GENERATE"
+            G[BaseLLMProvider Strategy]
+            G1[generate messages]
+            G --> G1
+        end
+    end
+
+    subgraph "Pluggable Implementations"
+        H1[ContextRetriever<br/>Cache-based]
+        H2[VectorDBRetriever<br/>Embedding-based]
+        H3[HybridRetriever<br/>Cache + Vector]
+
+        I1[AnthropicProvider]
+        I2[OpenAIProvider]
+        I3[CohereProvider]
+    end
+
+    subgraph "Output"
+        J[Message role=assistant]
+    end
+
+    A --> C
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+    F --> G
+    G --> J
+
+    D -.implements.-> H1
+    D -.implements.-> H2
+    D -.implements.-> H3
+
+    G -.implements.-> I1
+    G -.implements.-> I2
+    G -.implements.-> I3
+
+    style C fill:#fff4e1,stroke:#ff9800,stroke-width:3px
+    style D fill:#e3f2fd,stroke:#2196f3,stroke-width:2px
+    style E fill:#f3e5f5,stroke:#9c27b0,stroke-width:2px
+    style F fill:#e8f5e9,stroke:#4caf50,stroke-width:2px
+    style G fill:#fce4ec,stroke:#e91e63,stroke-width:2px
