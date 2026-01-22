@@ -1,6 +1,5 @@
 from .factory import create_rag_pipeline
-from .pipeline import RAGPipeline, Retriever
-from .prompt_builder import PromptBuilder
+from .pipeline import PromptBuilder, RAGPipeline, Retriever
 
 __all__ = [
     "create_rag_pipeline",

@@ -7,8 +7,8 @@ from app.common.clients.cache import (CacheClient, CacheClientType,
 from app.common.clients.db import PostgresDB
 from app.common.clients.http_client import HTTPClient
 from app.integrations.llm import BaseLLMProvider, LLMProviderFactory
-from app.schools.repository import school_repository
-from app.schools.service.cache_service import SchoolCacheService
+from app.ncaa.schools.repository import school_repository
+from app.ncaa.schools.service.cache_service import SchoolCacheService
 from app.settings import AppSettings, create_app_settings
 from app.utils import get_logger
 

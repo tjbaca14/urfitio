@@ -1,14 +1,14 @@
+"""Chat domain - school recruiting chat feature."""
+
 from app.common.models import Message
 
 from .models.dto import ChatRequest
-from .repository import ChatRepository
 from .routes import chat_router
-from .services import ConversationService
+from .services.chat_application import ChatApplicationService
 
 __all__ = [
     "ChatRequest",
     "Message",
     "chat_router",
-    "ConversationService",
-    "ChatRepository",
+    "ChatApplicationService",
 ]

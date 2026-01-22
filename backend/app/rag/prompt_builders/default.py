@@ -1,9 +1,11 @@
+"""Default prompt builder implementation."""
+
 from typing import Optional
 
 
-class PromptBuilder:
+class DefaultPromptBuilder:
     """
-    Pure prompt formatting service.
+    Default prompt formatting service for RAG.
 
     Responsibilities:
     - Format prompt templates (context + query formatting)

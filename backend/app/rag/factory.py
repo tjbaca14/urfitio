@@ -1,12 +1,12 @@
 """Factory for creating RAG pipeline instances."""
 
 from app.integrations.llm import BaseLLMProvider
-from app.rag.pipeline import RAGPipeline, Retriever
-from app.rag.prompt_builder import PromptBuilder
+from app.rag.pipeline import PromptBuilder, RAGPipeline, Retriever
 
 
 def create_rag_pipeline(
     retriever: Retriever,
+    prompt_builder: PromptBuilder,
     llm_provider: BaseLLMProvider,
 ) -> RAGPipeline:
     """
@@ -14,6 +14,7 @@ def create_rag_pipeline(
 
     Args:
         retriever: Context retriever implementation (domain-agnostic)
+        prompt_builder: Prompt builder implementation (domain-agnostic)
         llm_provider: LLM provider instance (Anthropic, OpenAI, etc.)
 
     Returns:
@@ -21,6 +22,6 @@ def create_rag_pipeline(
     """
     return RAGPipeline(
         context_retriever=retriever,
-        prompt_builder=PromptBuilder(),
+        prompt_builder=prompt_builder,
         llm_provider=llm_provider,
     )

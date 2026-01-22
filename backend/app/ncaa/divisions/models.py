@@ -1,4 +1,4 @@
-"""Division domain models."""
+"""Division models."""
 
 from app.common.models import BaseDTOModel
 

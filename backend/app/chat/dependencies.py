@@ -2,13 +2,11 @@
 
 from fastapi import Depends
 
-from app.adapters.dependencies import get_retriever
 from app.chat.repository import ChatRepository
-from app.chat.services import ConversationService
-from app.common.dependencies import get_llm_provider
-from app.integrations.llm import BaseLLMProvider
-from app.rag.factory import create_rag_pipeline
-from app.rag.pipeline import RAGPipeline, Retriever
+from app.chat.services.chat_application import ChatApplicationService
+from app.chat.services.conversation_store import ConversationStore
+from app.rag.dependencies import get_rag_pipeline
+from app.rag.pipeline import RAGPipeline
 
 
 async def get_chat_repository() -> ChatRepository:
@@ -16,36 +14,35 @@ async def get_chat_repository() -> ChatRepository:
     return ChatRepository()
 
 
-async def get_conversation_service(
+async def get_conversation_store(
     repository: ChatRepository = Depends(get_chat_repository),
-) -> ConversationService:
+) -> ConversationStore:
     """
-    Get ConversationService with repository.
+    Get ConversationStore with repository.
 
     Args:
         repository: Chat repository for data access
 
     Returns:
-        ConversationService instance
+        ConversationStore instance
     """
-    return ConversationService(repository)
+    return ConversationStore(repository)
 
 
-async def get_rag_pipeline(
-    retriever: Retriever = Depends(get_retriever),
-    llm_provider: BaseLLMProvider = Depends(get_llm_provider),
-) -> RAGPipeline:
+async def get_chat_application_service(
+    rag_pipeline: RAGPipeline = Depends(get_rag_pipeline),
+    conversation_store: ConversationStore = Depends(get_conversation_store),
+) -> ChatApplicationService:
     """
-    Get RAG pipeline with configured retriever and LLM.
+    Get ChatApplicationService with all dependencies.
 
-    Chat domain depends on generic protocols (Retriever, BaseLLMProvider),
-    not concrete implementations. The adapters layer provides the concrete retriever.
+    Chat domain consumes RAG pipeline from rag domain.
 
     Args:
-        retriever: Generic context retriever (concrete impl from adapters)
-        llm_provider: LLM provider from app state
+        rag_pipeline: Configured RAG pipeline (from rag domain)
+        conversation_store: Conversation persistence service
 
     Returns:
-        Configured RAGPipeline instance
+        ChatApplicationService instance
     """
-    return create_rag_pipeline(retriever, llm_provider)
+    return ChatApplicationService(rag_pipeline, conversation_store)

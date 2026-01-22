@@ -1,8 +1,8 @@
 """Division repository - data access for Division entities."""
 
-from app.common.db_model import Division
 from app.common.repository import BaseRepository
-from app.divisions.models import DivisionDTO
+from app.ncaa.db_models import Division
+from app.ncaa.divisions.models import DivisionDTO
 
 
 class DivisionRepository(BaseRepository[Division, DivisionDTO]):

@@ -1,4 +1,4 @@
-"""School domain models."""
+"""School models."""
 
 from typing import Optional
 

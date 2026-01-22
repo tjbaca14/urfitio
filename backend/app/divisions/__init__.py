@@ -1,1 +1,0 @@
-# Division domain module

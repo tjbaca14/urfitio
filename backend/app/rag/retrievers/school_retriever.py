@@ -1,12 +1,12 @@
 """
-School context retriever adapter.
+School context retriever for RAG.
 
-Bridges the Schools domain and RAG domain without either knowing about each other.
+Implements the Retriever protocol using NCAA school domain services.
 """
 
 from typing import Optional
 
-from app.schools.service.cache_service import SchoolCacheService
+from app.ncaa.schools.service.cache_service import SchoolCacheService
 from app.utils import get_logger
 
 logger = get_logger(__name__)
@@ -14,11 +14,10 @@ logger = get_logger(__name__)
 
 class SchoolContextRetriever:
     """
-    Adapter that implements RAG's Retriever protocol using Schools domain services.
+    Retrieves school-specific context for RAG.
 
-    This adapter allows the generic RAG pipeline to retrieve school-specific
-    context without the RAG domain knowing about schools, and without the
-    schools domain knowing about RAG.
+    This retriever allows RAG pipelines to retrieve school context
+    without having direct knowledge of school domain internals.
     """
 
     def __init__(self, cache_service: SchoolCacheService):

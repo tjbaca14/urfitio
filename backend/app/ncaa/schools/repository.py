@@ -1,8 +1,8 @@
 """School repository - data access for School entities."""
 
-from app.common.db_model import School
 from app.common.repository import BaseRepository
-from app.schools.models import SchoolDTO
+from app.ncaa.db_models import School
+from app.ncaa.schools.models import SchoolDTO
 
 
 class SchoolRepository(BaseRepository[School, SchoolDTO]):

@@ -2,7 +2,6 @@ from typing import List, Optional, Protocol
 
 from app.common.models import Message
 from app.integrations.llm import BaseLLMProvider
-from app.rag.prompt_builder import PromptBuilder
 from app.utils import get_logger
 
 logger = get_logger(__name__)
@@ -25,6 +24,37 @@ class Retriever(Protocol):
 
         Returns:
             Context string to augment the prompt, or None if no context found
+        """
+        ...
+
+
+class PromptBuilder(Protocol):
+    """
+    Protocol for prompt formatting and system prompt management.
+
+    Any prompt builder for RAG must implement this interface.
+    Examples: DefaultPromptBuilder, SchoolPromptBuilder, CustomPromptBuilder, etc.
+    """
+
+    def format_user_message(self, user_query: str, context: Optional[str]) -> str:
+        """
+        Format user query with optional context.
+
+        Args:
+            user_query: User's query text
+            context: Retrieved context to augment the query
+
+        Returns:
+            Formatted message content
+        """
+        ...
+
+    def get_system_prompt(self) -> str:
+        """
+        Get the system prompt for the RAG pipeline.
+
+        Returns:
+            System prompt string
         """
         ...
 
@@ -66,7 +96,7 @@ class RAGPipeline:
     async def generate(
         self,
         messages: List[Message],
-        context_query: Optional[str] = None,
+        context_key: Optional[str] = None,
     ) -> Message:
         """
         Execute complete RAG pipeline: retrieve, augment, generate.
@@ -79,7 +109,7 @@ class RAGPipeline:
 
         Args:
             messages: Conversation history
-            context_query: Optional query for context retrieval
+            context_key: Optional query for context retrieval
 
         Returns:
             Generated assistant message
@@ -89,7 +119,7 @@ class RAGPipeline:
         """
         self._validate_messages(messages)
 
-        context = await self._retrieve_context(context_query)
+        context = await self._retrieve_context(context_key)
         augmented_messages = self._augment_messages(messages, context)
         final_messages = self._ensure_system_prompt(augmented_messages)
 
@@ -102,13 +132,13 @@ class RAGPipeline:
         if not messages:
             raise ValueError("Cannot generate response with empty message list")
 
-    async def _retrieve_context(self, context_query: Optional[str]) -> Optional[str]:
+    async def _retrieve_context(self, context_key: Optional[str]) -> Optional[str]:
         """Retrieve context from domain provider."""
-        if not context_query:
+        if not context_key:
             logger.info("No context query provided, proceeding without context")
             return None
 
-        context = await self.context_retriever.retrieve(context_query)
+        context = await self.context_retriever.retrieve(context_key)
 
         return context
 

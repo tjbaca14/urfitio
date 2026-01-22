@@ -1,19 +1,17 @@
-from datetime import datetime
+"""Conversation service - persistence for chat history."""
+
 from typing import List, Optional
 
-import pytz
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.chat.models.dto import ChatHistoryDTO, ChatRequest
-from app.common.models import Message
+from app.chat.models.dto import ChatHistoryDTO
+from app.chat.repository import ChatRepository
 from app.utils import get_logger
-
-from .repository import ChatRepository
 
 logger = get_logger(__name__)
 
 
-class ConversationService:
+class ConversationStore:
     """
     Service responsible for managing chat conversation persistence.
     Handles saving, retrieving, and updating chat history.
@@ -23,39 +21,20 @@ class ConversationService:
         self.chat_repo = chat_repo
 
     async def save_conversation(
-        self, session: AsyncSession, chat_request: ChatRequest
+        self, session: AsyncSession, chat_history_dto: ChatHistoryDTO
     ) -> ChatHistoryDTO:
         """
         Save or update a conversation.
 
         Args:
             session: SQLAlchemy async session
-            chat_request: Chat request containing messages and metadata
+            chat_history_dto: Chat history DTO to persist
 
         Returns:
             Saved ChatHistoryDTO
         """
-
-        # Convert Message objects to dicts
-        messages = [message.model_dump() for message in chat_request.messages]
-
-        # Use provided created_date or current time
-        created_date = chat_request.created_date or datetime.now(
-            pytz.timezone("America/Los_Angeles")
-        )
-        updated_date = datetime.now(pytz.timezone("America/Los_Angeles"))
-
-        # Create DTO
-        chat_dto = ChatHistoryDTO(
-            id=chat_request.id,
-            user_id=chat_request.user_id,
-            messages=messages,
-            created_date=created_date,
-            updated_date=updated_date,
-        )
-
         # Save or update (upsert)
-        saved_chat = await self.chat_repo.update(session, chat_dto)
+        saved_chat = await self.chat_repo.update(session, chat_history_dto)
 
         logger.info(
             f"Conversation saved: {saved_chat.id} for user {saved_chat.user_id}"

@@ -1,6 +1,6 @@
-"""Database models matching actual schema from Alembic migrations."""
+"""NCAA database models - Division and School ORM models."""
 
-from sqlalchemy import JSON, TIMESTAMP, Column, ForeignKey, String
+from sqlalchemy import TIMESTAMP, Column, ForeignKey, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
@@ -8,32 +8,6 @@ Base = declarative_base()
 
 # Get schema from environment variable, default to 'app'
 SCHEMA = "app"
-
-
-class ChatHistory(Base):
-    """Chat conversation history for users"""
-
-    __tablename__ = "chat_history"
-    __table_args__ = {"schema": SCHEMA}
-
-    id = Column(String, primary_key=True, index=True)
-    user_id = Column(String, index=True)
-    messages = Column(JSON)
-    created_date = Column(TIMESTAMP(timezone=True))
-    updated_date = Column(TIMESTAMP(timezone=True))
-
-
-class Feedback(Base):
-    """User feedback submissions"""
-
-    __tablename__ = "feedback"
-    __table_args__ = {"schema": SCHEMA}
-
-    id = Column(String, primary_key=True, index=True)
-    user_id = Column(String, index=True)
-    feedback = Column(String, index=True)
-    category = Column(String)
-    created_date = Column(TIMESTAMP(timezone=True))
 
 
 class Division(Base):

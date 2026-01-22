@@ -23,8 +23,3 @@ async def get_llm_provider(request: Request) -> BaseLLMProvider:
 async def get_db_session(request: Request) -> AsyncGenerator[AsyncGenerator, None]:
     async with request.app.state.db.session() as session:
         yield session
-
-
-async def get_school_cache_service(request: Request):
-    """Get school cache service from application state."""
-    return request.app.state.school_cache_service

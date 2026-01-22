@@ -1,4 +1,4 @@
-"""Chat data transfer objects."""
+"""Chat domain data transfer objects."""
 
 from datetime import datetime
 from typing import List, Optional
@@ -10,16 +10,17 @@ from app.common.models import BaseDTOModel, Message
 
 class ChatRequest(BaseDTOModel):
     """
-    DTO for chat requests and responses (API).
+    DTO for chat requests (API).
 
-    Accepts camelCase from frontend, converts to snake_case internally.
+    Chat domain request model that accepts camelCase from frontend
+    and converts to snake_case internally.
     """
 
     model_config = {"populate_by_name": True}
 
     id: str
     user_id: str = Field(..., alias="userId")
-    context_query: Optional[str] = Field(None, alias="contextQuery")
+    context_key: Optional[str] = Field(None, alias="contextKey")
     messages: List[Message]
     metadata: Optional[dict] = None
     created_date: Optional[datetime] = Field(None, alias="createdDate")
