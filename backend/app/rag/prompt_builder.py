@@ -17,9 +17,11 @@ class PromptBuilder:
     Message flow is handled by RAGPipeline.
     """
 
-    DEFAULT_SYSTEM_PROMPT = """Use the context in <data> xml tags to answer the user query.
-If the user query cannot be determined from the context, do not answer. Inform the user as such and prompt a new question.
-If a user asks a question pertaining to themselves, ask for more data to answer the question to the best of your ability."""
+    DEFAULT_SYSTEM_PROMPT = """Use the context in <data> xml tags to answer the user query. \
+        If the user query cannot be determined from the context, do not answer. \
+        Inform the user as such and prompt a new question. \
+        If a user asks a question pertaining to themselves, \
+        ask for more data to answer the question to the best of your ability."""
 
     def __init__(self, system_prompt: Optional[str] = None):
         """

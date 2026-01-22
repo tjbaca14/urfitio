@@ -49,37 +49,37 @@ export const schoolsApi = {
    * Get all available divisions
    */
   getDivisions: async (): Promise<Division[]> => {
-    const { data } = await api.get<Division[]>('/schools/divisions');
+    const { data } = await api.get<Division[]>('/divisions');
     return data;
   },
 
   /**
-   * Get a single school by ID or name
+   * Get a single school within a division
    */
-  getSchool: async (schoolId: string): Promise<School> => {
-    const { data } = await api.get<School>(`/schools/${schoolId}`);
+  getSchool: async (divisionId: string, schoolId: string): Promise<School> => {
+    const { data } = await api.get<School>(`/divisions/${divisionId}/schools/${schoolId}`);
     return data;
   },
 
   /**
-   * List schools with optional filters
+   * List schools in a specific division with optional filters
    */
-  listSchools: async (params?: {
-    division?: string;
-    name_contains?: string;
-    limit?: number;
-  }): Promise<School[]> => {
-    const { data } = await api.get<School[]>('/schools', { params });
+  listSchools: async (
+    divisionId: string,
+    params?: {
+      name_contains?: string;
+      limit?: number;
+    }
+  ): Promise<School[]> => {
+    const { data } = await api.get<School[]>(`/divisions/${divisionId}/schools`, { params });
     return data;
   },
 
   /**
-   * Get schools in a specific division (convenience method)
+   * Get schools in a specific division (alias for listSchools)
    */
-  getSchoolsByDivision: async (division: string): Promise<School[]> => {
-    const { data } = await api.get<School[]>('/schools', {
-      params: { division },
-    });
+  getSchoolsByDivision: async (divisionId: string): Promise<School[]> => {
+    const { data } = await api.get<School[]>(`/divisions/${divisionId}/schools`);
     return data;
   },
 };

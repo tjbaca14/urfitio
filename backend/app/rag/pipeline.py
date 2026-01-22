@@ -54,7 +54,8 @@ class RAGPipeline:
         Initialize RAG pipeline with all dependencies.
 
         Args:
-            context_retriever: Domain-specific context provider (implements ContextProvider)
+            context_retriever:
+            Domain-specific context provider
             prompt_builder: Prompt builder for augmentation and system prompts
             llm_provider: LLM provider for generation (Anthropic, OpenAI, etc.)
         """

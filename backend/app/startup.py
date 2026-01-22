@@ -1,12 +1,14 @@
-from typing import Dict, Optional
+from typing import Optional
 
 import httpx
 
-from app.coaches.repository import CoachRepository
-from app.common.cache_builder import build_school_context_cache
+from app.common.clients.cache import (CacheClient, CacheClientType,
+                                      create_cache_client)
 from app.common.clients.db import PostgresDB
 from app.common.clients.http_client import HTTPClient
 from app.integrations.llm import BaseLLMProvider, LLMProviderFactory
+from app.schools.repository import school_repository
+from app.schools.service.cache_service import SchoolCacheService
 from app.settings import AppSettings, create_app_settings
 from app.utils import get_logger
 
@@ -21,19 +23,37 @@ class ApplicationContainer:
     """
 
     def __init__(self):
+        """Initialize container with optional clients."""
+        # Cache infrastructure (initialized during async _init_cache())
+        self.cache_client: Optional[CacheClient] = None
+        self.school_cache_service: Optional[SchoolCacheService] = None
+
+        # Other clients (initialized during async initialize())
         self.httpx_client: Optional[httpx.AsyncClient] = None
         self.http_client: Optional[HTTPClient] = None
         self.db: Optional[PostgresDB] = None
-        self.cache: Optional[Dict[str, str]] = None
         self.llm_provider: Optional[BaseLLMProvider] = None
 
-    async def _init_cache(self) -> Dict[str, str]:
-        """Initialize school context cache from database."""
-        coach_repo = CoachRepository()
+    async def _init_cache(self) -> None:
+        """
+        Initialize cache infrastructure and build school context cache.
+
+        Creates the cache client and school cache service, then populates
+        the cache from the database. Access to cached data is through
+        school_cache_service methods.
+        """
         if not self.db:
             raise RuntimeError("DB instance not created")
+
+        # Initialize cache infrastructure
+        self.cache_client = create_cache_client(CacheClientType.IN_MEMORY)
+        self.school_cache_service = SchoolCacheService(
+            repository=school_repository,
+            cache_client=self.cache_client,
+        )
+
         async with self.db.session() as session:
-            return await build_school_context_cache(session, coach_repo)
+            await self.school_cache_service.build_cache(session)
 
     async def initialize(self) -> "ApplicationContainer":
         """Initialize all application clients."""
@@ -56,7 +76,8 @@ class ApplicationContainer:
             http_client=self.http_client,
         )
 
-        self.cache = await self._init_cache()
+        # Build caches
+        await self._init_cache()
 
         logger.info("Application container initialized")
         return self

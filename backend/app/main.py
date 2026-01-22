@@ -4,8 +4,9 @@ import uvicorn
 from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.chat import chat_router
-from app.coaches import schools_router
+from app.chat.routes import chat_router
+from app.divisions.routes import divisions_router
+from app.schools.routes import schools_router
 from app.startup import ApplicationContainer
 from app.utils import get_logger
 
@@ -20,7 +21,8 @@ async def lifespan(app: FastAPI):
     app.state.db = container.db
     app.state.http_client = container.http_client
     app.state.llm_provider = container.llm_provider
-    app.state.cache = container.cache
+    app.state.cache_client = container.cache_client
+    app.state.school_cache_service = container.school_cache_service
 
     yield
 
@@ -50,6 +52,7 @@ async def health_check():
 
 
 app.include_router(chat_router)
+app.include_router(divisions_router)
 app.include_router(schools_router)
 
 if __name__ == "__main__":

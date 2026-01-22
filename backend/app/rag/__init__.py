@@ -1,9 +1,10 @@
-from .pipeline import RAGPipeline
+from .factory import create_rag_pipeline
+from .pipeline import RAGPipeline, Retriever
 from .prompt_builder import PromptBuilder
-from .retriever import ContextRetriever
 
 __all__ = [
+    "create_rag_pipeline",
     "PromptBuilder",
     "RAGPipeline",
-    "ContextRetriever",
+    "Retriever",
 ]

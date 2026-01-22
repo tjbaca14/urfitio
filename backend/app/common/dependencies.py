@@ -25,5 +25,6 @@ async def get_db_session(request: Request) -> AsyncGenerator[AsyncGenerator, Non
         yield session
 
 
-async def get_cache(request: Request) -> dict:
-    return request.app.state.cache
+async def get_school_cache_service(request: Request):
+    """Get school cache service from application state."""
+    return request.app.state.school_cache_service
