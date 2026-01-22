@@ -1,0 +1,108 @@
+graph TD
+    subgraph "API Layer (HTTP Boundary)"
+        A1[Chat Routes<br/>/api/v1/chats]
+        A2[Schools Routes<br/>/api/v1/schools]
+        A3[Divisions Routes<br/>/api/v1/divisions]
+        A4[Request/Response Models<br/>Pydantic DTOs]
+    end
+
+    subgraph "Application Layer (Use Case Orchestration)"
+        B1[ChatApplicationService<br/>Orchestrates chat feature]
+        B2[SchoolService<br/>School queries]
+        B3[DivisionService<br/>Division queries]
+    end
+
+    subgraph "Domain Layer (Business Logic)"
+        C1[ConversationService<br/>Chat persistence logic]
+        C2[SchoolCacheService<br/>Context caching]
+        C3[RAGPipeline<br/>Generic RAG algorithm]
+        C4[DefaultPromptBuilder<br/>Prompt formatting]
+        C5[SchoolContextRetriever<br/>Context retrieval]
+    end
+
+    subgraph "Repository Layer (Data Access Abstraction)"
+        D1[ChatRepository<br/>Chat data access]
+        D2[SchoolRepository<br/>School data access]
+        D3[DivisionRepository<br/>Division data access]
+        D4[BaseRepository<br/>Generic CRUD]
+    end
+
+    subgraph "Database Layer (Persistence)"
+        E1[(PostgreSQL)]
+        E2[ORM Models<br/>ChatHistory, School, Division]
+    end
+
+    subgraph "Integration Layer (External Systems)"
+        F1[BaseLLMProvider<br/>Abstract interface]
+        F2[AnthropicProvider<br/>Concrete implementation]
+        F3[LLMProviderFactory<br/>Provider creation]
+        F4[HTTPClient<br/>External API calls]
+    end
+
+    subgraph "Infrastructure Layer (Cross-Cutting)"
+        G1[Dependency Injection<br/>FastAPI Depends]
+        G2[PostgresDB<br/>Connection pool]
+        G3[InMemoryCacheClient<br/>Caching]
+        G4[Settings<br/>Environment config]
+    end
+
+    %% API to Application
+    A1 --> B1
+    A2 --> B2
+    A3 --> B3
+    A4 --> A1
+    A4 --> A2
+    A4 --> A3
+
+    %% Application to Domain
+    B1 --> C1
+    B1 --> C3
+    B2 --> C2
+    C1 --> D1
+    C2 --> D2
+
+    %% Domain orchestration
+    C3 --> C4
+    C3 --> C5
+    C3 --> F1
+    C5 --> C2
+
+    %% Repository to Base
+    D1 --> D4
+    D2 --> D4
+    D3 --> D4
+
+    %% Repository to Database
+    D4 --> E2
+    E2 --> E1
+
+    %% Integration
+    F1 --> F2
+    F3 --> F1
+    F2 --> F4
+
+    %% Infrastructure injections
+    G1 -.->|Injects| B1
+    G1 -.->|Injects| B2
+    G1 -.->|Injects| B3
+    G1 -.->|Injects| C3
+    G1 -.->|Injects| F1
+    G2 -.->|Provides| D4
+    G3 -.->|Used by| C2
+    G4 -.->|Configures| F3
+
+    style A1 fill:#e1f5ff
+    style A2 fill:#e1f5ff
+    style A3 fill:#e1f5ff
+    style B1 fill:#fff4e1
+    style B2 fill:#fff4e1
+    style B3 fill:#fff4e1
+    style C1 fill:#f0f0f0
+    style C2 fill:#f0f0f0
+    style C3 fill:#f0f0f0
+    style D1 fill:#e8f5e9
+    style D2 fill:#e8f5e9
+    style D3 fill:#e8f5e9
+    style E1 fill:#fce4ec
+    style F1 fill:#f3e5f5
+    style G1 fill:#fff9c4

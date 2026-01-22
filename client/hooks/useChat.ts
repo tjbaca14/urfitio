@@ -68,13 +68,13 @@ export function useDivisions() {
 }
 
 /**
- * Hook to fetch a single school within a division
+ * Hook to fetch a single school by ID
  */
-export function useSchool(divisionId: string | null, schoolId: string | null) {
+export function useSchool(schoolId: string | null) {
   return useQuery({
-    queryKey: ['school', divisionId, schoolId],
-    queryFn: () => schoolsApi.getSchool(divisionId!, schoolId!),
-    enabled: !!divisionId && !!schoolId,
+    queryKey: ['school', schoolId],
+    queryFn: () => schoolsApi.getSchool(schoolId!),
+    enabled: !!schoolId,
     staleTime: 24 * 60 * 60 * 1000,
   });
 }
@@ -82,30 +82,27 @@ export function useSchool(divisionId: string | null, schoolId: string | null) {
 /**
  * Hook to fetch schools for a specific division
  */
-export function useSchools(division: string | null) {
+export function useSchools(divisionId: string | null) {
   return useQuery({
-    queryKey: ['schools', division],
-    queryFn: () => schoolsApi.getSchoolsByDivision(division!),
-    enabled: !!division,
+    queryKey: ['schools', divisionId],
+    queryFn: () => schoolsApi.getSchoolsByDivision(divisionId!),
+    enabled: !!divisionId,
     // Schools rarely change, cache for 24 hours
     staleTime: 24 * 60 * 60 * 1000,
   });
 }
 
 /**
- * Hook to list schools with filters within a division
+ * Hook to list schools with optional filters
  */
-export function useListSchools(
-  divisionId: string | null,
-  params?: {
-    name_contains?: string;
-    limit?: number;
-  }
-) {
+export function useListSchools(params?: {
+  division_id?: string;
+  name_contains?: string;
+  limit?: number;
+}) {
   return useQuery({
-    queryKey: ['schools', 'list', divisionId, params],
-    queryFn: () => schoolsApi.listSchools(divisionId!, params),
-    enabled: !!divisionId,
+    queryKey: ['schools', 'list', params],
+    queryFn: () => schoolsApi.listSchools(params),
     staleTime: 24 * 60 * 60 * 1000,
   });
 }

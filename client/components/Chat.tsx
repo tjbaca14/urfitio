@@ -56,7 +56,7 @@ export function Chat() {
       id: chatId,
       userId: 'user-123', // TODO: Replace with actual user ID from auth
       messages: [...messages, userMessage],
-      contextQuery: selectedSchool || undefined,
+      contextKey: selectedSchool || undefined,
     };
 
     // Clear input immediately

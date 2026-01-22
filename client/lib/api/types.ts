@@ -7,7 +7,7 @@ export interface ChatRequest {
   id: string;
   userId: string;
   messages: Message[];
-  contextQuery?: string; // School name for context retrieval
+  contextKey?: string; // School name for context retrieval
   createdDate?: string;
 }
 

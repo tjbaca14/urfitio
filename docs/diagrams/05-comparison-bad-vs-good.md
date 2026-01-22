@@ -1,92 +1,18 @@
-# Diagram 5: Anti-Pattern vs. Proper Abstraction
+# 5: Anti-Pattern vs. Proper Abstraction
 
 ## Side-by-Side Comparison: Special-Cased vs. Generic Design
 
-```mermaid
-graph TB
-    subgraph "❌ ANTI-PATTERN: Special-Cased Design"
-        A1[Client Request]
-
-        A2[SchoolChatEndpoint]
-        A3[ProductChatEndpoint]
-        A4[LegalChatEndpoint]
-
-        A1 --> A2
-        A1 --> A3
-        A1 --> A4
-
-        A2 --> A5[SchoolChatService<br/>Hard-coded logic]
-        A3 --> A6[ProductChatService<br/>Duplicated logic]
-        A4 --> A7[LegalChatService<br/>Copy-pasted logic]
-
-        A5 --> A8[school_repository.get]
-        A5 --> A9[Anthropic API call<br/>Hard-coded]
-        A5 --> A10[Format prompt<br/>Inline strings]
-
-        A6 --> A11[product_repository.get]
-        A6 --> A12[Anthropic API call<br/>Hard-coded]
-        A6 --> A13[Format prompt<br/>Inline strings]
-
-        A7 --> A14[legal_repository.get]
-        A7 --> A15[Anthropic API call<br/>Hard-coded]
-        A7 --> A16[Format prompt<br/>Inline strings]
-
-        A9 --> A17[anthropic.messages.create]
-        A12 --> A17
-        A15 --> A17
-
-        style A2 fill:#ffcdd2
-        style A3 fill:#ffcdd2
-        style A4 fill:#ffcdd2
-        style A5 fill:#ef9a9a
-        style A6 fill:#ef9a9a
-        style A7 fill:#ef9a9a
-    end
-
-    subgraph "✅ PROPER ABSTRACTION: Generic Design"
-        B1[Client Request]
-
-        B2[Unified Chat Endpoint<br/>routes.py]
-        B1 --> B2
-
-        B2 --> B3[ChatOrchestrator<br/>Domain-agnostic]
-
-        B3 --> B4[RAGPipeline<br/>Generic algorithm]
-
-        B4 --> B5[Retriever Protocol<br/>Abstract interface]
-        B4 --> B6[PromptBuilder<br/>Configurable]
-        B4 --> B7[BaseLLMProvider<br/>Strategy interface]
-
-        B5 -.->|inject| B8[SchoolRetriever]
-        B5 -.->|inject| B9[ProductRetriever]
-        B5 -.->|inject| B10[LegalRetriever]
-
-        B7 -.->|inject| B11[AnthropicProvider]
-        B7 -.->|inject| B12[OpenAIProvider]
-        B7 -.->|inject| B13[LocalLLMProvider]
-
-        B11 --> B14[Provider Factory<br/>Config-driven]
-        B12 --> B14
-        B13 --> B14
-
-        style B2 fill:#c8e6c9
-        style B3 fill:#a5d6a7
-        style B4 fill:#81c784
-        style B5 fill:#66bb6a
-        style B6 fill:#66bb6a
-        style B7 fill:#66bb6a
-    end
-```
+![Anti-Pattern vs Proper Abstraction](./images/comparison.png)
 
 ---
 
 ## Code Comparison: The Real Difference
 
-### ❌ **Anti-Pattern: Special-Cased Implementation**
+### **Anti-Pattern: Special-Cased Implementation**
 
 ```python
 # app/chat/school_chat.py
-class SchoolChatService:
+class SchoolChatApplicationService:
     def __init__(self, db, anthropic_client):
         self.db = db
         self.anthropic = anthropic_client
@@ -117,7 +43,7 @@ class SchoolChatService:
 
 
 # app/chat/product_chat.py - DUPLICATED CODE!
-class ProductChatService:
+class ProductChatApplicationService:
     def __init__(self, db, anthropic_client):
         self.db = db
         self.anthropic = anthropic_client
@@ -150,12 +76,12 @@ class ProductChatService:
 # app/routes.py - Separate endpoints for each domain
 @app.post("/chat/schools")
 async def school_chat(request: SchoolChatRequest):
-    service = SchoolChatService(db, anthropic_client)
+    service = SchoolChatApplicationService(db, anthropic_client)
     return await service.chat(request.school_name, request.messages)
 
 @app.post("/chat/products")
 async def product_chat(request: ProductChatRequest):
-    service = ProductChatService(db, anthropic_client)
+    service = ProductChatApplicationService(db, anthropic_client)
     return await service.chat(request.product_id, request.messages)
 
 # Add legal chat? Copy-paste AGAIN!
@@ -177,7 +103,7 @@ async def product_chat(request: ProductChatRequest):
 
 ---
 
-### ✅ **Proper Abstraction: Generic Design**
+### **Proper Abstraction: Generic Design**
 
 ```python
 # app/rag/pipeline.py - ONE generic implementation
@@ -197,12 +123,12 @@ class RAGPipeline:
     async def generate(
         self,
         messages: List[Message],
-        context_query: Optional[str] = None,
+        context_key: Optional[str] = None,
     ) -> Message:
         # Generic algorithm - works for ANY domain
 
         # Step 1: Retrieve (works with ANY retriever)
-        context = await self.retriever.retrieve(context_query) if context_query else None
+        context = await self.retriever.retrieve(context_key) if context_key else None
 
         # Step 2: Augment (works with ANY builder)
         if context and messages:
@@ -324,12 +250,12 @@ class ApplicationContainer:
 
 ### Scenario: Add Vector Database Search
 
-#### ❌ **With Special-Cased Design**
+#### **With Special-Cased Design**
 
 **Files to modify**:
-1. `SchoolChatService` - Add vector DB query logic
-2. `ProductChatService` - Copy-paste vector DB logic
-3. `LegalChatService` - Copy-paste vector DB logic
+1. `SchoolChatApplicationService` - Add vector DB query logic
+2. `ProductChatApplicationService` - Copy-paste vector DB logic
+3. `LegalChatApplicationService` - Copy-paste vector DB logic
 4. `school_chat_test.py` - Update all tests
 5. `product_chat_test.py` - Update all tests
 6. `legal_chat_test.py` - Update all tests
@@ -340,7 +266,7 @@ class ApplicationContainer:
 
 ---
 
-#### ✅ **With Generic Design**
+#### **With Generic Design**
 
 **Files to modify**:
 1. Create `app/rag/vector_retriever.py` - New implementation
@@ -374,7 +300,7 @@ retriever = VectorDBRetriever(vector_db, embedding_model)  # New
 
 ### Scenario: 2 Years Later, Need to Change Prompt Format
 
-#### ❌ **Special-Cased Design**
+#### **Special-Cased Design**
 
 **Developer task**:
 1. Find all services with chat logic (grep? ask senior dev?)
@@ -390,7 +316,7 @@ retriever = VectorDBRetriever(vector_db, embedding_model)  # New
 
 ---
 
-#### ✅ **Generic Design**
+#### **Generic Design**
 
 **Developer task**:
 1. Open `app/rag/prompt_builder.py`
@@ -405,11 +331,11 @@ retriever = VectorDBRetriever(vector_db, embedding_model)  # New
 
 ## Testing Complexity
 
-### ❌ **Special-Cased Design**
+### **Special-Cased Design**
 
 ```python
 # Must test EACH service separately with full mocking
-async def test_school_chat_service():
+async def test_school_chat_application_service():
     mock_db = Mock()
     mock_db.query.return_value.filter_by.return_value.first.return_value = School(
         name="Stanford", division="D1", context="..."
@@ -418,7 +344,7 @@ async def test_school_chat_service():
     mock_anthropic = Mock()
     mock_anthropic.messages.create.return_value = Mock(content=[Mock(text="response")])
 
-    service = SchoolChatService(mock_db, mock_anthropic)
+    service = SchoolChatApplicationService(mock_db, mock_anthropic)
     result = await service.chat("Stanford", [{"role": "user", "content": "test"}])
 
     # Verify Anthropic was called with correct format
@@ -430,7 +356,7 @@ async def test_school_chat_service():
     )
 
 
-# Repeat for ProductChatService, LegalChatService, etc.
+# Repeat for ProductChatApplicationService, LegalChatApplicationService, etc.
 # EVERY test must mock Anthropic client
 ```
 
@@ -438,7 +364,7 @@ async def test_school_chat_service():
 
 ---
 
-### ✅ **Generic Design**
+### **Generic Design**
 
 ```python
 # Test pipeline ONCE with mocked interfaces

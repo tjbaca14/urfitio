@@ -1,0 +1,57 @@
+sequenceDiagram
+    participant Client as Client Code
+    participant Pipeline as RAGPipeline<br/>(Generic)
+    participant Retriever as Retriever<br/>(Protocol)
+    participant Builder as PromptBuilder<br/>(Pure Functions)
+    participant Provider as BaseLLMProvider<br/>(Strategy)
+
+    Note over Client,Provider: Generic RAG Flow - Domain Agnostic
+
+    Client->>Pipeline: generate(messages, context_key)
+    activate Pipeline
+
+    rect rgb(230, 240, 255)
+        Note over Pipeline,Retriever: STEP 1: RETRIEVE
+        Pipeline->>Retriever: retrieve(context_key)
+        activate Retriever
+        Note right of Retriever: Cache, Vector DB, API, or Hybrid
+        Retriever-->>Pipeline: Optional[str] context
+        deactivate Retriever
+    end
+
+    rect rgb(255, 240, 245)
+        Note over Pipeline,Builder: STEP 2: AUGMENT
+        alt Context exists
+            Pipeline->>Builder: format_user_message(query, context)
+            activate Builder
+            Builder->>Builder: Apply context template
+            Builder-->>Pipeline: augmented_message
+            deactivate Builder
+            Pipeline->>Pipeline: Replace last user message
+        else No context
+            Pipeline->>Pipeline: Use original messages
+        end
+    end
+
+    rect rgb(240, 255, 240)
+        Note over Pipeline,Builder: STEP 3: ENSURE SYSTEM
+        alt No system message in messages
+            Pipeline->>Builder: get_system_prompt()
+            activate Builder
+            Builder-->>Pipeline: system_prompt_text
+            deactivate Builder
+            Pipeline->>Pipeline: Prepend system message
+        end
+    end
+
+    rect rgb(255, 250, 240)
+        Note over Pipeline,Provider: STEP 4: GENERATE
+        Pipeline->>Provider: generate(messages, temperature, max_tokens)
+        activate Provider
+        Note right of Provider: Anthropic, OpenAI, Cohere, or Local
+        Provider-->>Pipeline: Message(role="assistant", content)
+        deactivate Provider
+    end
+
+    Pipeline-->>Client: Message (assistant response)
+    deactivate Pipeline

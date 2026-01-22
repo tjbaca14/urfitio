@@ -1,0 +1,124 @@
+graph TB
+    subgraph "NCAA Domain (app/ncaa/)"
+        direction TB
+        NCAA[NCAA Domain<br/>Schools & Divisions]
+
+        subgraph "Divisions Subdomain"
+            DIV_ROUTES[divisions/routes.py<br/>API Layer]
+            DIV_SERVICE[divisions/service.py<br/>DivisionService]
+            DIV_REPO[divisions/repository.py<br/>DivisionRepository]
+            DIV_MODELS[divisions/models.py<br/>DivisionDTO]
+        end
+
+        subgraph "Schools Subdomain"
+            SCH_ROUTES[schools/routes.py<br/>API Layer]
+            SCH_SERVICE[schools/service/<br/>SchoolService]
+            SCH_CACHE[schools/service/<br/>SchoolCacheService]
+            SCH_REPO[schools/repository.py<br/>SchoolRepository]
+            SCH_MODELS[schools/models.py<br/>SchoolDTO]
+        end
+
+        NCAA_DB[db_models.py<br/>Division, School ORM]
+
+        DIV_ROUTES --> DIV_SERVICE
+        DIV_SERVICE --> DIV_REPO
+        DIV_REPO --> NCAA_DB
+        DIV_SERVICE --> DIV_MODELS
+
+        SCH_ROUTES --> SCH_SERVICE
+        SCH_SERVICE --> SCH_REPO
+        SCH_SERVICE --> SCH_CACHE
+        SCH_REPO --> NCAA_DB
+        SCH_SERVICE --> SCH_MODELS
+        SCH_CACHE --> SCH_REPO
+    end
+
+    subgraph "Chat Domain (app/chat/)"
+        direction TB
+        CHAT[Chat Domain<br/>Conversation Management]
+
+        CHAT_ROUTES[routes.py<br/>POST /chats, PUT /chats/:id]
+        CHAT_APP_SERVICE[services/<br/>ChatApplicationService]
+        CHAT_CONV_SERVICE[services/<br/>ConversationService]
+        CHAT_REPO[repository.py<br/>ChatRepository]
+        CHAT_MODELS[models/dto.py<br/>ChatRequest, ChatHistoryDTO]
+        CHAT_DB[models/db_models.py<br/>ChatHistory, Feedback ORM]
+        CHAT_DEPS[dependencies.py<br/>DI configuration]
+
+        CHAT_ROUTES --> CHAT_APP_SERVICE
+        CHAT_APP_SERVICE --> CHAT_CONV_SERVICE
+        CHAT_CONV_SERVICE --> CHAT_REPO
+        CHAT_REPO --> CHAT_DB
+        CHAT_DEPS -.provides.-> CHAT_APP_SERVICE
+        CHAT_DEPS -.provides.-> CHAT_CONV_SERVICE
+    end
+
+    subgraph "RAG Domain (app/rag/)"
+        direction TB
+        RAG[RAG Domain<br/>Generic RAG Pipeline]
+
+        RAG_PIPELINE[pipeline.py<br/>RAGPipeline + Protocols]
+        RAG_FACTORY[factory.py<br/>create_rag_pipeline]
+        RAG_DEPS[dependencies.py<br/>get_rag_pipeline]
+
+        subgraph "Retrievers"
+            RAG_SCHOOL_RET[retrievers/<br/>SchoolContextRetriever]
+        end
+
+        subgraph "Prompt Builders"
+            RAG_PROMPT[prompt_builders/<br/>DefaultPromptBuilder]
+        end
+
+        RAG_PIPELINE --> RAG_SCHOOL_RET
+        RAG_PIPELINE --> RAG_PROMPT
+        RAG_FACTORY --> RAG_PIPELINE
+        RAG_DEPS -.provides.-> RAG_PIPELINE
+        RAG_SCHOOL_RET --> SCH_CACHE
+    end
+
+    subgraph "Common Domain (app/common/)"
+        direction TB
+        COMMON[Common Domain<br/>Shared Infrastructure]
+
+        COMMON_REPO[repository.py<br/>BaseRepository T, DTO]
+        COMMON_MODELS[models.py<br/>BaseDTOModel, Message]
+        COMMON_DEPS[dependencies.py<br/>get_db_session, get_llm_provider]
+
+        subgraph "Clients"
+            DB_CLIENT[clients/db.py<br/>PostgresDB]
+            HTTP_CLIENT[clients/http_client.py<br/>HTTPClient]
+            CACHE_CLIENT[clients/cache.py<br/>InMemoryCacheClient]
+        end
+    end
+
+    subgraph "Integrations (app/integrations/)"
+        direction TB
+        LLM[LLM Integration]
+
+        LLM_BASE[llm/base.py<br/>BaseLLMProvider ABC]
+        LLM_ANTHROPIC[llm/anthropic.py<br/>AnthropicProvider]
+        LLM_FACTORY[llm/factory.py<br/>LLMProviderFactory]
+
+        LLM_FACTORY --> LLM_BASE
+        LLM_ANTHROPIC --> LLM_BASE
+        LLM_ANTHROPIC --> HTTP_CLIENT
+    end
+
+    %% Domain Dependencies
+    CHAT_APP_SERVICE --> RAG_PIPELINE
+    RAG_SCHOOL_RET --> SCH_CACHE
+
+    %% Infrastructure Dependencies
+    CHAT_REPO --> COMMON_REPO
+    DIV_REPO --> COMMON_REPO
+    SCH_REPO --> COMMON_REPO
+
+    RAG_PIPELINE --> LLM_BASE
+    COMMON_DEPS -.provides.-> DB_CLIENT
+    COMMON_DEPS -.provides.-> LLM_FACTORY
+
+    style NCAA fill:#e3f2fd,stroke:#2196f3,stroke-width:3px
+    style CHAT fill:#fff4e1,stroke:#ff9800,stroke-width:3px
+    style RAG fill:#f3e5f5,stroke:#9c27b0,stroke-width:3px
+    style COMMON fill:#e8f5e9,stroke:#4caf50,stroke-width:3px
+    style LLM fill:#fce4ec,stroke:#e91e63,stroke-width:3px

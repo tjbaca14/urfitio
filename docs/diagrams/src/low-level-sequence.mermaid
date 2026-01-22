@@ -1,0 +1,135 @@
+sequenceDiagram
+    participant Client
+    participant Routes as FastAPI Route<br/>(API Layer)
+    participant DI as Dependency<br/>Injection
+    participant ChatApp as ChatApplicationService<br/>(Application)
+    participant RAG as RAGPipeline<br/>(Generic)
+    participant Retriever as SchoolContextRetriever<br/>(Protocol)
+    participant Cache as SchoolCacheService<br/>(NCAA Domain)
+    participant Builder as DefaultPromptBuilder<br/>(Pure Functions)
+    participant Provider as BaseLLMProvider<br/>(Strategy Pattern)
+    participant Anthropic as AnthropicProvider<br/>(Concrete Strategy)
+    participant HTTP as HTTPClient<br/>(Adapter)
+    participant LLM_API as Anthropic API
+
+    Note over Client,LLM_API: PATTERN: Dependency Injection + Factory + Strategy + Template Method
+
+    Client->>Routes: POST /api/v1/chats
+    activate Routes
+    Note right of Routes: Pydantic validates ChatRequest
+
+    Routes->>DI: Resolve get_chat_application_service()
+    activate DI
+
+    DI->>DI: get_rag_pipeline()
+    Note right of DI: From rag/dependencies.py
+
+    DI->>DI: get_conversation_service()
+    Note right of DI: DI: Pre-built at startup
+
+    DI-->>Routes: ChatApplicationService instance
+    deactivate DI
+
+    Routes->>ChatApp: generate_response(chat_request)
+    activate ChatApp
+
+    Note over ChatApp: APPLICATION SERVICE - Orchestrates use case
+
+    ChatApp->>RAG: generate(messages, context_key)
+    activate RAG
+
+    Note over RAG: TEMPLATE METHOD - Fixed algorithm, pluggable components
+
+    rect rgb(240, 248, 255)
+        Note over RAG,Cache: Step 1: RETRIEVE CONTEXT
+        RAG->>Retriever: retrieve(context_key)
+        activate Retriever
+        Note right of Retriever: PROTOCOL PATTERN - Structural typing
+
+        Retriever->>Cache: get_school_context(school_name)
+        activate Cache
+        Note right of Cache: NCAA domain service
+        Cache->>Cache: InMemoryCacheClient lookup
+        Note right of Cache: O(1) cache hit
+        Cache-->>Retriever: Optional[str] (context)
+        deactivate Cache
+
+        Retriever-->>RAG: Optional[str] (context or None)
+        deactivate Retriever
+    end
+
+    rect rgb(255, 250, 240)
+        Note over RAG,Builder: Step 2: AUGMENT PROMPT
+        RAG->>Builder: format_user_message(query, context)
+        activate Builder
+        Note right of Builder: BUILDER PATTERN - Pure function
+        Builder->>Builder: Format template with XML tags
+        Note right of Builder: Wraps context in <data> tags
+        Builder-->>RAG: Augmented message string
+        deactivate Builder
+
+        RAG->>RAG: Replace last user message with augmented
+    end
+
+    rect rgb(240, 255, 240)
+        Note over RAG,Builder: Step 3: ENSURE SYSTEM PROMPT
+        RAG->>Builder: get_system_prompt()
+        activate Builder
+        Builder-->>RAG: System prompt string
+        deactivate Builder
+        RAG->>RAG: Prepend system message if absent
+    end
+
+    rect rgb(255, 245, 255)
+        Note over RAG,LLM_API: Step 4: GENERATE RESPONSE
+
+        RAG->>Provider: generate(augmented_messages)
+        activate Provider
+
+        Note over Provider: STRATEGY PATTERN - Interchangeable implementations
+        Note right of Provider: Any BaseLLMProvider works
+
+        Provider->>Anthropic: Delegate to concrete implementation
+        activate Anthropic
+
+        Note over Anthropic: ADAPTER PATTERN - Format translation
+
+        Anthropic->>Anthropic: _separate_system_messages()
+        Note right of Anthropic: Anthropic-specific format quirk
+
+        Anthropic->>Anthropic: _to_anthropic_format()
+        Note right of Anthropic: Convert Message → Anthropic JSON
+
+        Anthropic->>HTTP: post(url, headers, json)
+        activate HTTP
+        Note right of HTTP: Centralized error handling
+
+        HTTP->>LLM_API: HTTPS POST /v1/messages
+        Note right of LLM_API: External API call
+        activate LLM_API
+        LLM_API-->>HTTP: 200 OK {content: [...]}
+        deactivate LLM_API
+
+        HTTP-->>Anthropic: Response JSON
+        deactivate HTTP
+
+        Anthropic->>Anthropic: _parse_response()
+        Note right of Anthropic: Convert Anthropic JSON → Message
+
+        Anthropic-->>Provider: Message(role="assistant", content="...")
+        deactivate Anthropic
+
+        Provider-->>RAG: Message
+        deactivate Provider
+    end
+
+    RAG-->>ChatApp: Message (assistant response)
+    deactivate RAG
+
+    ChatApp-->>Routes: Message
+    deactivate ChatApp
+
+    Routes-->>Client: 200 OK {role, content}
+    deactivate Routes
+
+    Note over Client,LLM_API: Patterns: DI, Factory, Strategy, Protocol, Builder, Template Method, Adapter

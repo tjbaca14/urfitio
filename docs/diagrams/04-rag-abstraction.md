@@ -1,148 +1,20 @@
-# Diagram 4: RAG Pipeline Abstraction
+# 4: RAG Pipeline Abstraction
 
 ## Generic RAG Architecture
 
-```mermaid
-graph TB
-    subgraph "Input"
-        A[messages: List Message]
-        B[context_query: Optional str]
-    end
-
-    subgraph "RAG Pipeline - Generic Algorithm"
-        C[RAGPipeline]
-
-        subgraph "Step 1: RETRIEVE"
-            D[Retriever Protocol]
-            D1[retrieve query]
-            D --> D1
-        end
-
-        subgraph "Step 2: AUGMENT"
-            E[PromptBuilder]
-            E1[format_user_message]
-            E --> E1
-        end
-
-        subgraph "Step 3: ENSURE SYSTEM"
-            F[System Prompt]
-            F1[Prepend if absent]
-            F --> F1
-        end
-
-        subgraph "Step 4: GENERATE"
-            G[BaseLLMProvider Strategy]
-            G1[generate messages]
-            G --> G1
-        end
-    end
-
-    subgraph "Pluggable Implementations"
-        H1[ContextRetriever<br/>Cache-based]
-        H2[VectorDBRetriever<br/>Embedding-based]
-        H3[HybridRetriever<br/>Cache + Vector]
-
-        I1[AnthropicProvider]
-        I2[OpenAIProvider]
-        I3[CohereProvider]
-    end
-
-    subgraph "Output"
-        J[Message role=assistant]
-    end
-
-    A --> C
-    B --> C
-    C --> D
-    D --> E
-    E --> F
-    F --> G
-    G --> J
-
-    D -.implements.-> H1
-    D -.implements.-> H2
-    D -.implements.-> H3
-
-    G -.implements.-> I1
-    G -.implements.-> I2
-    G -.implements.-> I3
-
-    style C fill:#fff4e1,stroke:#ff9800,stroke-width:3px
-    style D fill:#e3f2fd,stroke:#2196f3,stroke-width:2px
-    style E fill:#f3e5f5,stroke:#9c27b0,stroke-width:2px
-    style F fill:#e8f5e9,stroke:#4caf50,stroke-width:2px
-    style G fill:#fce4ec,stroke:#e91e63,stroke-width:2px
-```
+![RAG Pipeline Architecture](./images/rag-abstraction.png)
 
 ---
 
 ## Detailed Flow Breakdown
 
-```mermaid
-sequenceDiagram
-    participant Client as Client Code
-    participant Pipeline as RAGPipeline<br/>(Generic)
-    participant Retriever as Retriever<br/>(Protocol)
-    participant Builder as PromptBuilder<br/>(Pure Functions)
-    participant Provider as BaseLLMProvider<br/>(Strategy)
-
-    Note over Client,Provider: Generic RAG Flow - Domain Agnostic
-
-    Client->>Pipeline: generate(messages, context_query)
-    activate Pipeline
-
-    rect rgb(230, 240, 255)
-        Note over Pipeline,Retriever: STEP 1: RETRIEVE
-        Pipeline->>Retriever: retrieve(context_query)
-        activate Retriever
-        Note right of Retriever: Cache, Vector DB, API, or Hybrid
-        Retriever-->>Pipeline: Optional[str] context
-        deactivate Retriever
-    end
-
-    rect rgb(255, 240, 245)
-        Note over Pipeline,Builder: STEP 2: AUGMENT
-        alt Context exists
-            Pipeline->>Builder: format_user_message(query, context)
-            activate Builder
-            Builder->>Builder: Apply context template
-            Builder-->>Pipeline: augmented_message
-            deactivate Builder
-            Pipeline->>Pipeline: Replace last user message
-        else No context
-            Pipeline->>Pipeline: Use original messages
-        end
-    end
-
-    rect rgb(240, 255, 240)
-        Note over Pipeline,Builder: STEP 3: ENSURE SYSTEM
-        alt No system message in messages
-            Pipeline->>Builder: get_system_prompt()
-            activate Builder
-            Builder-->>Pipeline: system_prompt_text
-            deactivate Builder
-            Pipeline->>Pipeline: Prepend system message
-        end
-    end
-
-    rect rgb(255, 250, 240)
-        Note over Pipeline,Provider: STEP 4: GENERATE
-        Pipeline->>Provider: generate(messages, temperature, max_tokens)
-        activate Provider
-        Note right of Provider: Anthropic, OpenAI, Cohere, or Local
-        Provider-->>Pipeline: Message(role="assistant", content)
-        deactivate Provider
-    end
-
-    Pipeline-->>Client: Message (assistant response)
-    deactivate Pipeline
-```
+![RAG Pipeline Flow](./images/rag-flow.png)
 
 ---
 
 ## Why This Is Generic (Not Special-Cased)
 
-### ✅ **Domain-Agnostic Design**
+### **Domain-Agnostic Design**
 
 The RAG pipeline doesn't know about:
 - **What** the context is (school info, product data, legal docs)
@@ -152,7 +24,7 @@ The RAG pipeline doesn't know about:
 **Contrast with Special-Cased Design**:
 
 ```python
-# ❌ BAD: Special-cased for schools
+# BAD: Special-cased for schools
 class SchoolChatPipeline:
     async def generate(self, messages, school_name: str):
         # Hard-coded to school domain
@@ -166,11 +38,11 @@ class SchoolChatPipeline:
         )
         return response.content[0].text
 
-# ✅ GOOD: Generic RAG pipeline
+# GOOD: Generic RAG pipeline
 class RAGPipeline:
-    async def generate(self, messages, context_query: Optional[str]):
+    async def generate(self, messages, context_key: Optional[str]):
         # Generic - works for ANY domain
-        context = await self.retriever.retrieve(context_query) if context_query else None
+        context = await self.retriever.retrieve(context_key) if context_key else None
 
         # Generic - works with ANY template
         if context:
@@ -405,7 +277,7 @@ class LocalLLMProvider(BaseLLMProvider):
 
 ## Benefits of Generic Design
 
-### 1️⃣ **Extensibility Without Modification (Open/Closed Principle)**
+### 1. **Extensibility Without Modification (Open/Closed Principle)**
 
 Adding new capabilities requires **zero changes** to existing code:
 
@@ -418,7 +290,7 @@ Adding new capabilities requires **zero changes** to existing code:
 
 ---
 
-### 2️⃣ **Testability**
+### 2. **Testability**
 
 Each component can be tested in isolation:
 
@@ -446,7 +318,7 @@ async def test_rag_pipeline():
 
 ---
 
-### 3️⃣ **Reusability Across Domains**
+### 3. **Reusability Across Domains**
 
 Same pipeline, different contexts:
 
@@ -475,7 +347,7 @@ legal_pipeline = RAGPipeline(
 
 ---
 
-### 4️⃣ **Configuration-Driven Behavior**
+### 4. **Configuration-Driven Behavior**
 
 Change behavior via config, not code:
 
@@ -502,10 +374,10 @@ Factory reads config → creates components → injects into pipeline
 
 ## Anti-Pattern: Special-Cased Design
 
-### ❌ What NOT to do
+### What NOT to do
 
 ```python
-class ChatService:
+class ChatApplicationService:
     async def chat_about_schools(self, school_name: str, message: str):
         # Special-cased for schools
         school = await self.db.get_school(school_name)

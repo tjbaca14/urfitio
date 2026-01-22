@@ -1,145 +1,15 @@
-# Diagram 3: Detailed Backend Sequence with Design Patterns
+# 3: Detailed Backend Sequence with Design Patterns
 
 ## Complete Request Flow with Pattern Annotations
 
-```mermaid
-sequenceDiagram
-    participant Client
-    participant Routes as FastAPI Route<br/>(API Layer)
-    participant DI as Dependency<br/>Injection
-    participant Orch as ChatOrchestrator<br/>(Orchestration)
-    participant RAG as RAGPipeline<br/>(Generic)
-    participant Retriever as ContextRetriever<br/>(Protocol)
-    participant Builder as PromptBuilder<br/>(Pure Functions)
-    participant Factory as LLMProviderFactory<br/>(Factory Pattern)
-    participant Provider as BaseLLMProvider<br/>(Strategy Pattern)
-    participant Anthropic as AnthropicProvider<br/>(Concrete Strategy)
-    participant HTTP as HTTPClient<br/>(Adapter)
-    participant LLM_API as Anthropic API
-
-    Note over Client,LLM_API: 🎯 PATTERN: Dependency Injection + Factory + Strategy
-
-    Client->>Routes: POST /api/v1/chats
-
-    activate Routes
-    Note right of Routes: 📋 Pydantic validates ChatRequest
-
-    Routes->>DI: Resolve get_chat_orchestrator()
-    activate DI
-
-    DI->>DI: get_llm_provider()
-    Note right of DI: From app.state singleton
-
-    DI->>DI: get_cache()
-    Note right of DI: 💉 DI: Pre-built at startup
-
-    DI-->>Routes: ChatOrchestrator instance
-    deactivate DI
-
-    Routes->>Orch: process_chat(chat_request)
-    activate Orch
-
-    Note over Orch: FACADE PATTERN - Simplifies subsystem
-
-    Orch->>RAG: generate(messages, context_query)
-    activate RAG
-
-    Note over RAG: TEMPLATE METHOD - Fixed algorithm
-
-    rect rgb(240, 248, 255)
-        Note over RAG,Retriever: Step 1: RETRIEVE CONTEXT
-        RAG->>Retriever: retrieve(context_query)
-        activate Retriever
-        Note right of Retriever: PROTOCOL PATTERN - No inheritance
-        Retriever->>Retriever: Cache lookup in Dict
-        Note right of Retriever: O(1) lookup by key
-        Retriever-->>RAG: Optional[str] (context or None)
-        deactivate Retriever
-    end
-
-    rect rgb(255, 250, 240)
-        Note over RAG,Builder: Step 2: AUGMENT PROMPT
-        RAG->>Builder: format_user_message(query, context)
-        activate Builder
-        Note right of Builder: BUILDER PATTERN - Pure function
-        Builder->>Builder: Format template
-        Note right of Builder: Wraps context in XML tags
-        Builder-->>RAG: Augmented message string
-        deactivate Builder
-
-        RAG->>RAG: Replace last user message
-    end
-
-    rect rgb(240, 255, 240)
-        Note over RAG,Builder: Step 3: ENSURE SYSTEM PROMPT
-        RAG->>Builder: get_system_prompt()
-        activate Builder
-        Builder-->>RAG: System prompt string
-        deactivate Builder
-        RAG->>RAG: Prepend system message if absent
-    end
-
-    rect rgb(255, 245, 255)
-        Note over RAG,LLM_API: Step 4: GENERATE RESPONSE
-
-        RAG->>Provider: generate(augmented_messages)
-        activate Provider
-
-        Note over Provider: STRATEGY PATTERN - Interchangeable
-        Note right of Provider: Any BaseLLMProvider works
-
-        Provider->>Anthropic: Delegate to concrete implementation
-        activate Anthropic
-
-        Note over Anthropic: ADAPTER PATTERN - Format translation
-
-        Anthropic->>Anthropic: _separate_system_messages()
-        Note right of Anthropic: Anthropic-specific format
-
-        Anthropic->>Anthropic: _to_anthropic_format()
-        Note right of Anthropic: Convert to provider format
-
-        Anthropic->>HTTP: post(url, headers, json)
-        activate HTTP
-        Note right of HTTP: Centralized error handling
-
-        HTTP->>LLM_API: HTTPS POST /v1/messages
-        Note right of LLM_API: External API call
-        activate LLM_API
-        LLM_API-->>HTTP: 200 OK {content: [...]}
-        deactivate LLM_API
-
-        HTTP-->>Anthropic: Response JSON
-        deactivate HTTP
-
-        Anthropic->>Anthropic: _parse_response()
-        Note right of Anthropic: Convert from provider format
-
-        Anthropic-->>Provider: Message(role="assistant", content="...")
-        deactivate Anthropic
-
-        Provider-->>RAG: Message
-        deactivate Provider
-    end
-
-    RAG-->>Orch: Message (assistant response)
-    deactivate RAG
-
-    Orch-->>Routes: Message
-    deactivate Orch
-
-    Routes-->>Client: 200 OK ChatResponse
-    deactivate Routes
-
-    Note over Client,LLM_API: PATTERNS: DI, Factory, Strategy, Protocol, Builder, Facade, Adapter, Template Method
-```
+![Detailed Backend Sequence](./images/low-level-sequence.png)
 
 ---
 
 ## Pattern Catalog: Why Each Pattern Exists
 
-### 1️⃣ **Dependency Injection (DI)**
-**Location**: `app/common/dependencies.py`, `app/chat/dependencies.py`
+### 1. **Dependency Injection (DI)**
+**Location**: `app/common/dependencies.py`, `app/chat/dependencies.py`, `app/rag/dependencies.py`
 
 **Problem Solved**:
 - Hard-coded dependencies make testing impossible
@@ -148,34 +18,37 @@ sequenceDiagram
 **How It Works**:
 ```python
 # ❌ BAD: Hard-coded dependency
-class ChatOrchestrator:
+class ChatApplicationService:
     def __init__(self):
-        self.llm_provider = AnthropicProvider()  # Tightly coupled!
+        self.rag_pipeline = RAGPipeline(...)  # Tightly coupled!
+        self.llm_provider = AnthropicProvider()
 
 # ✅ GOOD: Dependency injection
-class ChatOrchestrator:
-    def __init__(self, llm_provider: BaseLLMProvider):  # Abstraction injected
-        self.llm_provider = llm_provider
+class ChatApplicationService:
+    def __init__(self, rag_pipeline: RAGPipeline, conversation_service: ConversationService):
+        self.rag_pipeline = rag_pipeline
+        self.conversation_service = conversation_service
 ```
 
 **Benefits**:
-- Can inject mock provider in tests
+- Can inject mock RAG pipeline in tests
 - Swap Anthropic → OpenAI by changing one line in DI config
-- No code changes in ChatOrchestrator
+- No code changes in ChatApplicationService
 
 **FastAPI Implementation**:
 ```python
-async def get_chat_orchestrator(
-    llm_provider: BaseLLMProvider = Depends(get_llm_provider),
-    cache: dict = Depends(get_cache),
-) -> ChatOrchestrator:
-    return create_chat_orchestrator(cache, llm_provider)
+# app/chat/dependencies.py
+async def get_chat_application_service(
+    rag_pipeline: RAGPipeline = Depends(get_rag_pipeline),
+    conversation_service: ConversationService = Depends(get_conversation_service),
+) -> ChatApplicationService:
+    return ChatApplicationService(rag_pipeline, conversation_service)
 ```
 
 ---
 
-### 2️⃣ **Factory Pattern**
-**Location**: `app/integrations/llm/factory.py`
+### 2. **Factory Pattern**
+**Location**: `app/integrations/llm/factory.py`, `app/rag/factory.py`
 
 **Problem Solved**:
 - Creating objects with complex initialization
@@ -198,6 +71,7 @@ class LLMProviderFactory:
         return provider_class(
             api_key=config.API_KEY,
             model=config.MODEL,
+            http_client=http_client,
             # ... other config
         )
 ```
@@ -217,7 +91,7 @@ class LLMProviderFactory:
 
 ---
 
-### 3️⃣ **Strategy Pattern**
+### 3. **Strategy Pattern**
 **Location**: `app/integrations/llm/base.py`, `app/integrations/llm/anthropic.py`
 
 **Problem Solved**:
@@ -260,8 +134,8 @@ async def generate_response(provider: BaseLLMProvider, messages: List[Message]):
 
 ---
 
-### 4️⃣ **Protocol Pattern** (Python-specific)
-**Location**: `app/rag/pipeline.py` (Retriever protocol)
+### 4. **Protocol Pattern** (Python-specific)
+**Location**: `app/rag/pipeline.py` (Retriever and PromptBuilder protocols)
 
 **Problem Solved**:
 - Need interface without inheritance complexity
@@ -277,55 +151,40 @@ class Retriever(Protocol):
         """Retrieve context for given query."""
         ...
 
+class PromptBuilder(Protocol):
+    def format_user_message(self, query: str, context: Optional[str]) -> str:
+        ...
+    def get_system_prompt(self) -> str:
+        ...
+
 # Implementation (NO inheritance required!)
-class ContextRetriever:  # Doesn't inherit from Retriever
-    def __init__(self, cache: Dict[str, str]):
-        self.cache = cache
+class SchoolContextRetriever:  # Doesn't inherit from Retriever
+    def __init__(self, cache_service: SchoolCacheService):
+        self._cache_service = cache_service
 
     async def retrieve(self, query: str) -> Optional[str]:
-        return self.cache.get(query)  # Structural typing - it just works!
+        return await self._cache_service.get_school_context(query)  # Structural typing works!
 
 # Another implementation
 class VectorDBRetriever:  # Also doesn't inherit
-    def __init__(self, embedding_model, vector_db):
-        self.embedding_model = embedding_model
+    def __init__(self, vector_db):
         self.vector_db = vector_db
 
     async def retrieve(self, query: str) -> Optional[str]:
         # Completely different implementation
-        embedding = await self.embedding_model.embed(query)
-        results = await self.vector_db.search(embedding)
+        results = await self.vector_db.search(query)
         return results[0].content if results else None
 ```
 
 **Benefits**:
 - **No inheritance hell**: Each retriever stands alone
 - **Type safety**: MyPy checks Protocol compliance
-- **Flexibility**: Any object with `retrieve(query: str)` method works
-
-**Comparison**:
-```python
-# ❌ With inheritance (rigid)
-class BaseRetriever(ABC):
-    @abstractmethod
-    async def retrieve(self, query: str) -> Optional[str]:
-        pass
-
-class ContextRetriever(BaseRetriever):  # Must inherit
-    # Now coupled to base class
-    pass
-
-# ✅ With Protocol (flexible)
-class ContextRetriever:  # No inheritance
-    async def retrieve(self, query: str) -> Optional[str]:
-        # Just implement the method
-        pass
-```
+- **Flexibility**: Any object with matching method signatures works
 
 ---
 
-### 5️⃣ **Builder Pattern**
-**Location**: `app/rag/prompt_builder.py`
+### 5. **Builder Pattern**
+**Location**: `app/rag/prompt_builders/default.py`
 
 **Problem Solved**:
 - Complex prompt construction
@@ -333,9 +192,11 @@ class ContextRetriever:  # No inheritance
 
 **How It Works**:
 ```python
-class PromptBuilder:
-    def __init__(self, system_prompt: str = DEFAULT_SYSTEM_PROMPT):
-        self.system_prompt = system_prompt
+class DefaultPromptBuilder:
+    DEFAULT_SYSTEM_PROMPT = """Use the context in <data> xml tags..."""
+
+    def __init__(self, system_prompt: Optional[str] = None):
+        self.system_prompt = system_prompt or self.DEFAULT_SYSTEM_PROMPT
 
     def format_user_message(self, query: str, context: Optional[str]) -> str:
         """Pure function - no side effects."""
@@ -345,79 +206,54 @@ class PromptBuilder:
 
     def get_system_prompt(self) -> str:
         return self.system_prompt
-
-    def set_system_prompt(self, prompt: str) -> None:
-        self.system_prompt = prompt
 ```
 
 **Benefits**:
 - **Separation of concerns**: Prompt logic separate from generation
 - **Testability**: Pure functions, easy to test
 - **Reusability**: Same builder across different pipelines
-
-**Why NOT a complex builder?**
-```python
-# ❌ Over-engineered
-class PromptBuilder:
-    def add_context(self): return self
-    def add_examples(self): return self
-    def add_instructions(self): return self
-    def build(self): return self.prompt
-
-# ✅ Simple, focused
-class PromptBuilder:
-    def format_user_message(self, query, context): ...
-```
+- **Extensibility**: Easy to create variants (FewShotPromptBuilder, StructuredPromptBuilder)
 
 ---
 
-### 6️⃣ **Facade Pattern**
-**Location**: `app/chat/orchestrator.py`
+### 6. **Application Service Pattern**
+**Location**: `app/chat/services/chat_application.py`
 
 **Problem Solved**:
-- Complex subsystem (RAG + LLM + caching) needs simple interface
-- Client shouldn't know about all internal details
+- Use cases span multiple domain services
+- Need orchestration without mixing business logic
 
 **How It Works**:
 ```python
-class ChatOrchestrator:
-    """Facade: Simplifies complex RAG subsystem."""
+class ChatApplicationService:
+    """Application Service: Orchestrates use cases across domains"""
 
-    def __init__(self, rag_pipeline: RAGPipeline):
+    def __init__(self, rag_pipeline: RAGPipeline, conversation_service: ConversationService):
         self.rag_pipeline = rag_pipeline
+        self.conversation_service = conversation_service
 
-    async def process_chat(self, request: ChatRequest) -> Message:
-        # Hide complexity - client just calls process_chat()
+    async def generate_response(self, chat_request: ChatRequest) -> Message:
+        # Orchestrates RAG pipeline (from RAG domain)
         response = await self.rag_pipeline.generate(
-            messages=request.messages,
-            context_query=request.contextQuery,
+            messages=chat_request.messages,
+            context_key=chat_request.context_key,
         )
         return response
+
+    async def save_conversation(self, session: AsyncSession, chat_request: ChatRequest):
+        # Orchestrates conversation persistence (from Chat domain)
+        chat_history_dto = self._to_chat_history_dto(chat_request)
+        await self.conversation_service.save_conversation(session, chat_history_dto)
 ```
 
-**Without Facade** (client code):
-```python
-# ❌ Client must understand RAG internals
-retriever = ContextRetriever(cache)
-prompt_builder = PromptBuilder()
-llm_provider = get_llm_provider()
-rag_pipeline = RAGPipeline(retriever, prompt_builder, llm_provider)
-
-# Complex setup...
-context = await retriever.retrieve(context_query)
-augmented = prompt_builder.format_user_message(query, context)
-response = await llm_provider.generate([augmented])
-```
-
-**With Facade** (client code):
-```python
-# ✅ Client just calls one method
-response = await orchestrator.process_chat(request)
-```
+**Benefits**:
+- **Clear separation**: Use case orchestration vs domain logic
+- **Reusability**: Domain services reusable by multiple use cases
+- **Testability**: Mock domain services, test orchestration logic
 
 ---
 
-### 7️⃣ **Adapter Pattern**
+### 7. **Adapter Pattern**
 **Location**: `app/integrations/llm/anthropic.py`
 
 **Problem Solved**:
@@ -431,6 +267,12 @@ class AnthropicProvider(BaseLLMProvider):
         """Adapt our Message → Anthropic format."""
         return [{"role": msg.role, "content": msg.content} for msg in messages]
 
+    def _separate_system_messages(self, messages: List[Message]) -> tuple:
+        """Anthropic-specific: system messages go in separate field."""
+        system_messages = [msg.content for msg in messages if msg.role == "system"]
+        non_system = [msg for msg in messages if msg.role != "system"]
+        return " ".join(system_messages), non_system
+
     def _parse_response(self, response_data: dict) -> Message:
         """Adapt Anthropic format → our Message."""
         content = response_data["content"][0]["text"]
@@ -438,10 +280,18 @@ class AnthropicProvider(BaseLLMProvider):
 
     async def generate(self, messages: List[Message]) -> Message:
         # Adapt request
-        anthropic_messages = self._to_anthropic_format(messages)
+        system, non_system = self._separate_system_messages(messages)
+        anthropic_messages = self._to_anthropic_format(non_system)
 
         # Call external API
-        response_data = await self.http_client.post(...)
+        response_data = await self.http_client.post(
+            url=self.base_url,
+            json={
+                "model": self.model,
+                "system": system,
+                "messages": anthropic_messages,
+            }
+        )
 
         # Adapt response
         return self._parse_response(response_data)
@@ -454,7 +304,7 @@ class AnthropicProvider(BaseLLMProvider):
 
 ---
 
-### 8️⃣ **Template Method Pattern**
+### 8. **Template Method Pattern**
 **Location**: `app/rag/pipeline.py`
 
 **Problem Solved**:
@@ -466,15 +316,25 @@ class AnthropicProvider(BaseLLMProvider):
 class RAGPipeline:
     """Template: Fixed algorithm, pluggable steps."""
 
+    def __init__(
+        self,
+        retriever: Retriever,
+        prompt_builder: PromptBuilder,
+        llm_provider: BaseLLMProvider,
+    ):
+        self.retriever = retriever
+        self.prompt_builder = prompt_builder
+        self.llm_provider = llm_provider
+
     async def generate(
         self,
         messages: List[Message],
-        context_query: Optional[str] = None,
+        context_key: Optional[str] = None,
     ) -> Message:
         # TEMPLATE ALGORITHM (fixed order):
 
         # Step 1: Retrieve (pluggable - any Retriever)
-        context = await self.retriever.retrieve(context_query) if context_query else None
+        context = await self.retriever.retrieve(context_key) if context_key else None
 
         # Step 2: Augment (pluggable - any PromptBuilder)
         if context and messages:
@@ -491,11 +351,7 @@ class RAGPipeline:
             messages = [Message(role="system", content=system_prompt)] + messages
 
         # Step 4: Generate (pluggable - any BaseLLMProvider)
-        response = await self.llm_provider.generate(
-            messages=messages,
-            temperature=self.temperature,
-            max_tokens=self.max_tokens,
-        )
+        response = await self.llm_provider.generate(messages)
 
         return response
 ```
@@ -504,39 +360,41 @@ class RAGPipeline:
 - **Fixed RAG algorithm**: Always retrieve → augment → generate
 - **Pluggable components**: Swap retriever, builder, provider independently
 - **New RAG variants**: Subclass and override specific steps
+- **Testability**: Mock individual steps
 
 ---
 
 ## Anti-Patterns Avoided
 
-### ❌ **God Object**
+### **God Object**
 **Problem**: One class does everything
 
-**Avoided by**: Layered architecture with SRP
+**Avoided by**: Clear separation of Application Service, Domain Services, and Infrastructure
 
-### ❌ **Tight Coupling**
+### **Tight Coupling**
 **Problem**: Classes directly instantiate dependencies
 
 **Avoided by**: Dependency injection throughout
 
-### ❌ **Magic Strings**
+### **Magic Strings**
 **Problem**: Hard-coded values everywhere
 
 **Avoided by**: Settings class with environment variables
 
-### ❌ **Leaky Abstractions**
+### **Leaky Abstractions**
 **Problem**: Implementation details leak through interfaces
 
 **Avoided by**:
 - `BaseLLMProvider` doesn't expose provider-specific methods
 - `Retriever` protocol is generic (doesn't expose cache details)
+- `RAGPipeline` doesn't know about SchoolCacheService
 
-### ❌ **Inheritance Hell**
+### **Inheritance Hell**
 **Problem**: Deep inheritance hierarchies
 
 **Avoided by**:
 - Protocols instead of abstract base classes
-- Composition over inheritance (ChatOrchestrator has RAGPipeline)
+- Composition over inheritance (ChatApplicationService has RAGPipeline)
 
 ---
 
@@ -556,6 +414,7 @@ class RAGPipeline:
    class OpenAIProvider(BaseLLMProvider):
        async def generate(self, messages: List[Message]) -> Message:
            # OpenAI-specific implementation
+           pass
    ```
 
 2. Update factory (1 line):
@@ -573,7 +432,57 @@ class RAGPipeline:
 
 **Result**:
 - **1 new file**, **1 line changed** in existing code
-- **Zero changes** to orchestrator, pipeline, routes, repositories
+- **Zero changes** to ChatApplicationService, RAGPipeline, routes, repositories
 - **Tests**: Only need tests for OpenAIProvider, existing tests still pass
 
-This is the power of proper abstraction! 🎉
+This is the power of proper abstraction!
+
+---
+
+## Dependency Injection Flow
+
+```
+Request
+  ↓
+FastAPI Route
+  ↓
+Depends(get_chat_application_service)
+  ↓
+get_chat_application_service() in app/chat/dependencies.py
+  ├─→ Depends(get_rag_pipeline) from app/rag/dependencies.py
+  │    ├─→ Depends(get_retriever)
+  │    │    └─→ Depends(get_school_cache_service) from app/ncaa/schools/dependencies.py
+  │    │         └─→ app.state.school_cache_service (built at startup)
+  │    ├─→ Depends(get_prompt_builder)
+  │    │    └─→ DefaultPromptBuilder()
+  │    └─→ Depends(get_llm_provider)
+  │         └─→ app.state.llm_provider (built at startup)
+  └─→ Depends(get_conversation_service)
+       └─→ ConversationService(ChatRepository())
+```
+
+---
+
+## Key Architectural Insights
+
+**Strengths**:
+
+1. **Clean Domain Separation**: NCAA, Chat, RAG, Common domains have clear boundaries
+2. **Layered Architecture**: Clear separation of routes → application → domain → repository
+3. **Extensibility**: Protocol-based design allows easy addition of new retrievers, builders, providers
+4. **DTO Isolation**: Domain logic is decoupled from database implementation
+5. **Reusable RAG Pipeline**: Generic pipeline can work with any retriever and provider
+6. **Centralized DI**: ApplicationContainer manages application-scoped resources
+7. **Error Handling**: Consistent HTTP exception translation across all integrations
+
+**Pattern Summary**:
+- **Dependency Injection**: Loose coupling throughout
+- **Factory**: Provider creation
+- **Strategy**: Interchangeable LLM providers
+- **Protocol**: Retriever and PromptBuilder interfaces
+- **Builder**: Prompt formatting
+- **Application Service**: Use case orchestration
+- **Adapter**: Format translation for external APIs
+- **Template Method**: Fixed RAG algorithm with pluggable steps
+
+This architecture demonstrates how traditional software engineering patterns apply powerfully to AI/LLM applications!
