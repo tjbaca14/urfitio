@@ -32,7 +32,7 @@ Separation of responsibility is the foundation of successful AI systems. When re
 - Database: PostgreSQL with SQLAlchemy (async ORM)
 - LLM: Anthropic Claude API (swappable via provider pattern)
 - Validation: Pydantic
-- Cache: In-memory (InMemoryCacheClient)
+- Cache: In-memory
 
 ### Key Characteristics
 
