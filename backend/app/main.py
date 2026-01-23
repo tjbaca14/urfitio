@@ -1,13 +1,12 @@
 from contextlib import asynccontextmanager
 
 import uvicorn
-from fastapi import FastAPI, Response
-from fastapi.middleware.cors import CORSMiddleware
-
 from app.chat.routes import chat_router
 from app.ncaa import divisions_router, schools_router
 from app.startup import ApplicationContainer
 from app.utils import get_logger
+from fastapi import FastAPI, Response
+from fastapi.middleware.cors import CORSMiddleware
 
 logger = get_logger(__name__)
 

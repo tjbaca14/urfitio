@@ -1,7 +1,7 @@
 from typing import List, Optional, Protocol
 
 from app.common.models import Message
-from app.integrations.llm import BaseLLMProvider
+from app.integrations.llm import LLMProvider
 from app.utils import get_logger
 
 logger = get_logger(__name__)
@@ -78,7 +78,7 @@ class RAGPipeline:
         self,
         context_retriever: Retriever,
         prompt_builder: PromptBuilder,
-        llm_provider: BaseLLMProvider,
+        llm_provider: LLMProvider,
     ):
         """
         Initialize RAG pipeline with all dependencies.

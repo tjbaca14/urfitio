@@ -2,14 +2,13 @@
 
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.common.dependencies import get_db_session
 from app.ncaa.schools.dependencies import get_school_service
 from app.ncaa.schools.models import SchoolResponse
 from app.ncaa.schools.service.school_service import SchoolService
 from app.utils import EntityNotFoundError, get_logger
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = get_logger(__name__)
 

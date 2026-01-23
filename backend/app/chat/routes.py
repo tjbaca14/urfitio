@@ -1,14 +1,13 @@
 """Chat routes - API endpoints for school recruiting chat."""
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Path
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.chat.dependencies import get_chat_application_service
 from app.chat.models.dto import ChatHistoryDTO, ChatRequest
 from app.chat.services.chat_application import ChatApplicationService
 from app.common.dependencies import get_db_session
 from app.common.models import Message
 from app.utils import get_logger
+from fastapi import APIRouter, Body, Depends, HTTPException, Path
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = get_logger(__name__)
 

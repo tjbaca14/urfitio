@@ -1,13 +1,13 @@
 """Factory for creating RAG pipeline instances."""
 
-from app.integrations.llm import BaseLLMProvider
+from app.integrations.llm import LLMProvider
 from app.rag.pipeline import PromptBuilder, RAGPipeline, Retriever
 
 
 def create_rag_pipeline(
     retriever: Retriever,
     prompt_builder: PromptBuilder,
-    llm_provider: BaseLLMProvider,
+    llm_provider: LLMProvider,
 ) -> RAGPipeline:
     """
     Factory function to create a configured RAG pipeline.

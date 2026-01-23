@@ -1,10 +1,9 @@
-from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Protocol
 
 from app.common.models import Message
 
 
-class BaseLLMProvider(ABC):
+class LLMProvider(Protocol):
     """
     Abstract base class for all LLM providers.
 
@@ -18,7 +17,6 @@ class BaseLLMProvider(ABC):
     not by providers.
     """
 
-    @abstractmethod
     async def generate(
         self,
         messages: List[Message],
@@ -41,4 +39,4 @@ class BaseLLMProvider(ABC):
         Raises:
             HTTPException: On API errors, network issues, or unexpected failures
         """
-        pass
+        ...

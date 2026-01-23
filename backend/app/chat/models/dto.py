@@ -3,9 +3,8 @@
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import Field
-
 from app.common.models import BaseDTOModel, Message
+from pydantic import Field
 
 
 class ChatRequest(BaseDTOModel):

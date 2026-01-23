@@ -1,12 +1,11 @@
 """Cache client abstraction and implementations."""
 
 import pickle
-from abc import ABC, abstractmethod
 from enum import StrEnum
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Protocol
 
 
-class CacheClient(ABC):
+class CacheClient(Protocol):
     """
     Abstract cache storage client.
 
@@ -16,7 +15,6 @@ class CacheClient(ABC):
     All implementations handle serialization internally.
     """
 
-    @abstractmethod
     async def get(self, key: str) -> Optional[Any]:
         """
         Get value by key.
@@ -27,9 +25,8 @@ class CacheClient(ABC):
         Returns:
             Deserialized value if exists, None otherwise
         """
-        pass
+        ...
 
-    @abstractmethod
     async def set(self, key: str, value: Any) -> None:
         """
         Set key-value pair.
@@ -38,9 +35,8 @@ class CacheClient(ABC):
             key: Cache key
             value: Value to store (will be serialized internally)
         """
-        pass
+        ...
 
-    @abstractmethod
     async def get_all(self) -> Dict[str, Any]:
         """
         Get all key-value pairs.
@@ -48,9 +44,8 @@ class CacheClient(ABC):
         Returns:
             Dict of all cached key-value pairs (deserialized)
         """
-        pass
+        ...
 
-    @abstractmethod
     async def set_many(self, items: Dict[str, Any]) -> None:
         """
         Set multiple key-value pairs.
@@ -58,15 +53,14 @@ class CacheClient(ABC):
         Args:
             items: Dict of key-value pairs to store (will be serialized internally)
         """
-        pass
+        ...
 
-    @abstractmethod
     async def clear(self) -> None:
         """Clear all cache entries."""
-        pass
+        ...
 
 
-class InMemoryCacheClient(CacheClient):
+class InMemoryCacheClient:
     """
     In-memory cache implementation.
 

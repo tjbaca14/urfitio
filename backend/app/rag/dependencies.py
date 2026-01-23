@@ -1,15 +1,14 @@
 """RAG domain dependencies."""
 
-from fastapi import Depends
-
 from app.common.dependencies import get_llm_provider
-from app.integrations.llm import BaseLLMProvider
+from app.integrations.llm import LLMProvider
 from app.ncaa.schools.dependencies import get_school_cache_service
 from app.ncaa.schools.service.cache_service import SchoolCacheService
 from app.rag.factory import create_rag_pipeline
 from app.rag.pipeline import PromptBuilder, RAGPipeline, Retriever
 from app.rag.prompt_builders import DefaultPromptBuilder
 from app.rag.retrievers import SchoolContextRetriever
+from fastapi import Depends
 
 
 async def get_retriever(
@@ -42,7 +41,7 @@ async def get_prompt_builder() -> PromptBuilder:
 async def get_rag_pipeline(
     retriever: Retriever = Depends(get_retriever),
     prompt_builder: PromptBuilder = Depends(get_prompt_builder),
-    llm_provider: BaseLLMProvider = Depends(get_llm_provider),
+    llm_provider: LLMProvider = Depends(get_llm_provider),
 ) -> RAGPipeline:
     """
     Get fully configured RAG pipeline.

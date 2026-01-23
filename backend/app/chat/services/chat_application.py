@@ -4,13 +4,12 @@ from datetime import datetime
 from typing import List, Optional
 
 import pytz
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.chat.models.dto import ChatHistoryDTO, ChatRequest
 from app.chat.services.conversation_store import ConversationStore
 from app.common.models import Message
 from app.rag.pipeline import RAGPipeline
 from app.utils import get_logger
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = get_logger(__name__)
 

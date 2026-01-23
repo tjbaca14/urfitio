@@ -1,8 +1,7 @@
 from typing import List
 
-from pydantic import BaseModel
-
 from app.common.models import Message
+from pydantic import BaseModel
 
 
 class LLMRequest(BaseModel):

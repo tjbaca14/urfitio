@@ -2,11 +2,10 @@
 
 from typing import List, Optional
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.chat.models.dto import ChatHistoryDTO
 from app.chat.repository import ChatRepository
 from app.utils import get_logger
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = get_logger(__name__)
 

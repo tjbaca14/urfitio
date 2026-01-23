@@ -1,6 +1,6 @@
 from app.common.clients.http_client import HTTPClient
 from app.integrations.llm.anthropic import AnthropicProvider
-from app.integrations.llm.base import BaseLLMProvider
+from app.integrations.llm.base import LLMProvider
 from app.settings import LLMConfig
 
 
@@ -16,7 +16,7 @@ class LLMProviderFactory:
     }
 
     @staticmethod
-    def create(config: LLMConfig, http_client: HTTPClient) -> BaseLLMProvider:
+    def create(config: LLMConfig, http_client: HTTPClient) -> LLMProvider:
         """
         Create LLM provider based on provider name.
 

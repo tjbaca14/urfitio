@@ -2,14 +2,13 @@
 
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, Path, status
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.common.dependencies import get_db_session
 from app.ncaa.divisions.dependencies import get_division_service
 from app.ncaa.divisions.models import DivisionResponse
 from app.ncaa.divisions.service import DivisionService
 from app.utils import EntityNotFoundError, get_logger
+from fastapi import APIRouter, Depends, HTTPException, Path, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = get_logger(__name__)
 

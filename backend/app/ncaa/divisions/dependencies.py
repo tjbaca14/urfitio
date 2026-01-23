@@ -1,10 +1,9 @@
 """Division dependencies."""
 
-from fastapi import Depends
-
 from app.ncaa.divisions.repository import (DivisionRepository,
                                            division_repository)
 from app.ncaa.divisions.service import DivisionService
+from fastapi import Depends
 
 
 async def get_division_repository() -> DivisionRepository:
