@@ -62,7 +62,7 @@ class ChatApplicationService:
         """
         logger.info(f"Generating response for chat: {chat_request.id}")
 
-        response_message = await self.rag_pipeline.generate(
+        response_message = await self.rag_pipeline.run(
             messages=chat_request.messages,
             context_key=chat_request.context_key,
         )
