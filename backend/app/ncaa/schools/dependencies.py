@@ -1,11 +1,10 @@
 """School dependencies."""
 
-from fastapi import Depends, Request
-
 from app.common.clients.cache import CacheClient
 from app.ncaa.schools.repository import SchoolRepository, school_repository
 from app.ncaa.schools.service.cache_service import SchoolCacheService
 from app.ncaa.schools.service.school_service import SchoolService
+from fastapi import Depends, Request
 
 
 async def get_school_repository() -> SchoolRepository:

@@ -2,12 +2,11 @@
 
 from typing import Dict, List, Optional
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.common.clients.cache import CacheClient
 from app.ncaa.schools.models import SchoolDTO
 from app.ncaa.schools.repository import SchoolRepository
 from app.utils import get_logger
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = get_logger(__name__)
 

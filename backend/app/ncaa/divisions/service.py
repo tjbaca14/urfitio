@@ -2,11 +2,10 @@
 
 from typing import List
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.ncaa.divisions.models import DivisionResponse
 from app.ncaa.divisions.repository import DivisionRepository
 from app.utils import EntityNotFoundError, get_logger
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = get_logger(__name__)
 

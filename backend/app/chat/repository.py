@@ -3,12 +3,11 @@
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional
 
-from sqlalchemy import select, update
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.chat.models.db_models import ChatHistory
 from app.chat.models.dto import ChatHistoryDTO
 from app.common.repository import BaseRepository
+from sqlalchemy import select, update
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class ChatRepository(BaseRepository[ChatHistory, ChatHistoryDTO]):

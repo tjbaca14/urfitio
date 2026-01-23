@@ -2,13 +2,12 @@ from typing import Any, List, Optional, Tuple
 
 from app.common.clients.http_client import HTTPClient
 from app.common.models import Message
-from app.integrations.llm.base import BaseLLMProvider
 from app.utils import get_logger
 
 logger = get_logger(__name__)
 
 
-class AnthropicProvider(BaseLLMProvider):
+class AnthropicProvider:
     """
     Anthropic Claude API provider implementation.
 
@@ -56,10 +55,8 @@ class AnthropicProvider(BaseLLMProvider):
         Returns:
             Assistant message with generated response
         """
-        # Separate system messages from conversation
         system_prompt, conversation = self._separate_system_messages(messages)
 
-        # Transform to Anthropic format
         anthropic_messages = self._to_anthropic_format(conversation)
 
         # Build request payload
@@ -74,15 +71,13 @@ class AnthropicProvider(BaseLLMProvider):
         if system_prompt:
             payload["system"] = system_prompt
 
-        # Make HTTP request
-        response_data = await self.http_client.post(
+        response_data = await self.http_client.post_json(
             url=self.base_url,
             headers=self._build_headers(),
             json=payload,
             timeout=None,
         )
 
-        # Parse response
         return self._parse_response(response_data)
 
     def _separate_system_messages(

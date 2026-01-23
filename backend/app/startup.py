@@ -1,12 +1,11 @@
 from typing import Optional
 
 import httpx
-
 from app.common.clients.cache import (CacheClient, CacheClientType,
                                       create_cache_client)
 from app.common.clients.db import PostgresDB
 from app.common.clients.http_client import HTTPClient
-from app.integrations.llm import BaseLLMProvider, LLMProviderFactory
+from app.integrations.llm import LLMProvider, LLMProviderFactory
 from app.ncaa.schools.repository import school_repository
 from app.ncaa.schools.service.cache_service import SchoolCacheService
 from app.settings import AppSettings, create_app_settings
@@ -32,7 +31,7 @@ class ApplicationContainer:
         self.httpx_client: Optional[httpx.AsyncClient] = None
         self.http_client: Optional[HTTPClient] = None
         self.db: Optional[PostgresDB] = None
-        self.llm_provider: Optional[BaseLLMProvider] = None
+        self.llm_provider: Optional[LLMProvider] = None
 
     async def _init_cache(self) -> None:
         """

@@ -1,12 +1,11 @@
 """Chat domain dependencies."""
 
-from fastapi import Depends
-
 from app.chat.repository import ChatRepository
 from app.chat.services.chat_application import ChatApplicationService
 from app.chat.services.conversation_store import ConversationStore
 from app.rag.dependencies import get_rag_pipeline
 from app.rag.pipeline import RAGPipeline
+from fastapi import Depends
 
 
 async def get_chat_repository() -> ChatRepository:
