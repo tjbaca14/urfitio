@@ -1,10 +1,40 @@
 from typing import List, Optional, Protocol
 
 from app.common.models import Message
-from app.integrations.llm import LLMProvider
 from app.utils import get_logger
 
 logger = get_logger(__name__)
+
+
+class Generator(Protocol):
+    """
+    Protocol for LLM response generation.
+
+    Any component that generates responses from messages must implement this interface.
+    Examples: AnthropicProvider, OpenAIProvider, MockLLMProvider, etc.
+    """
+
+    async def generate(
+        self,
+        messages: List[Message],
+        temperature: float = 0.7,
+        max_tokens: int = 1024,
+    ) -> Message:
+        """
+        Generate a response from messages.
+
+        Args:
+            messages: Conversation messages in universal format.
+            temperature: Sampling temperature (0.0 to 1.0)
+            max_tokens: Maximum tokens to generate
+
+        Returns:
+            Assistant message with generated response
+
+        Raises:
+            HTTPException: On API errors, network issues, or unexpected failures
+        """
+        ...
 
 
 class Retriever(Protocol):
@@ -78,22 +108,21 @@ class RAGPipeline:
         self,
         context_retriever: Retriever,
         prompt_builder: PromptBuilder,
-        llm_provider: LLMProvider,
+        llm_provider: Generator,
     ):
         """
         Initialize RAG pipeline with all dependencies.
 
         Args:
-            context_retriever:
-            Domain-specific context provider
+            context_retriever: Domain-specific context provider
             prompt_builder: Prompt builder for augmentation and system prompts
-            llm_provider: LLM provider for generation (Anthropic, OpenAI, etc.)
+            llm_provider: Generator for LLM response generation
         """
         self.context_retriever = context_retriever
         self.prompt_builder = prompt_builder
         self.llm_provider = llm_provider
 
-    async def generate(
+    async def run(
         self,
         messages: List[Message],
         context_key: Optional[str] = None,

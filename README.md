@@ -239,7 +239,7 @@ Feedback (id, user_id, feedback, category, created_date)
 1. **Retrieve**: Get context via `Retriever` protocol
 2. **Augment**: Format prompt via `PromptBuilder` protocol
 3. **Ensure System Prompt**: Add system message if missing
-4. **Generate**: Call LLM via `BaseLLMProvider` strategy
+4. **Generate**: Call LLM via `Generator` protocol
 
 **Protocols (Interfaces)**:
 ```python
@@ -249,6 +249,14 @@ class Retriever(Protocol):
 class PromptBuilder(Protocol):
     def format_user_message(query: str, context: Optional[str]) -> str
     def get_system_prompt() -> str
+
+class Generator(Protocol):
+    async def generate(
+        self,
+        messages: List[Message],
+        temperature: float = 0.7,
+        max_tokens: int = 1024,
+    ) -> Message:
 ```
 
 **Current Implementations**:
@@ -314,16 +322,12 @@ provider_map = {
 ```
 
 #### 3. **Strategy Pattern**
-**Where**: `BaseLLMProvider` with multiple implementations
+**Where**: `LLMProvider` with multiple implementations
 **Why**: Interchangeable LLM providers at runtime
-```python
-class BaseLLMProvider(ABC):
-    @abstractmethod
-    async def generate(messages: List[Message]) -> Message
-```
+
 
 #### 4. **Protocol Pattern**
-**Where**: `Retriever`, `PromptBuilder` protocols
+**Where**: `Retriever`, `PromptBuilder`, `Generator`  protocols
 **Why**: Structural typing without inheritance
 ```python
 class Retriever(Protocol):
@@ -334,7 +338,7 @@ class Retriever(Protocol):
 **Where**: `RAGPipeline.generate()`
 **Why**: Fixed algorithm with pluggable steps
 ```python
-async def generate(messages, context_key):
+async def run(messages, context_key):
     context = await self.retriever.retrieve(context_key)  # Step 1
     augmented = self.prompt_builder.format(...)           # Step 2
     return await self.llm_provider.generate(...)          # Step 3
