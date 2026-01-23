@@ -1,6 +1,6 @@
 # UrFitIO Backend Architecture Documentation
 
-**A Domain-Driven, Pattern-Based Architecture for AI/LLM Applications**
+A Domain-Driven, Pattern-Based Architecture for AI and LLM Applications
 
 ---
 
@@ -20,26 +20,83 @@
 
 ## Overview
 
-This documentation describes the architecture of UrFitIO's backend - a FastAPI-based application that demonstrates how traditional software engineering principles and design patterns apply to AI/LLM systems.
+This documentation describes the architecture of UrFitIO's backend, a FastAPI-based application that demonstrates how traditional software engineering principles and design patterns apply to AI and LLM systems.
 
-**Core Philosophy**: AI applications are software systems first. They benefit from the same architectural principles (SOLID, DDD, design patterns) that make traditional software maintainable and extensible.
+Core philosophy: AI applications are software systems first. They benefit from the same architectural principles that make traditional software maintainable and extensible.
+
+Separation of responsibility is the foundation of successful AI systems. When responsibilities collapse, retrieval, orchestration, domain logic, persistence, infrastructure, and prompt behavior bleed into each other and the system becomes brittle and hard to evolve.
 
 ### Technology Stack
 
-- **Framework**: FastAPI (async Python)
-- **Database**: PostgreSQL with SQLAlchemy (async ORM)
-- **LLM**: Anthropic Claude API (swappable via Strategy pattern)
-- **Validation**: Pydantic
-- **Cache**: In-memory (InMemoryCacheClient)
+- Framework: FastAPI (async Python)
+- Database: PostgreSQL with SQLAlchemy (async ORM)
+- LLM: Anthropic Claude API (swappable via provider pattern)
+- Validation: Pydantic
+- Cache: In-memory (InMemoryCacheClient)
 
 ### Key Characteristics
 
-- **Domain-Driven Design**: Clear bounded contexts (NCAA, Chat, RAG, Common)
-- **Layered Architecture**: API → Application → Domain → Repository → Database
-- **Protocol-Based**: Python Protocols for interfaces (no inheritance hell)
-- **Generic RAG Pipeline**: Domain-agnostic Retrieval-Augmented Generation
-- **Dependency Injection**: FastAPI Depends() pattern throughout
-- **Repository Pattern**: DTO-based data access with BaseRepository
+- Domain-driven design with clear bounded contexts (NCAA, Chat, RAG, Common)
+- Layered architecture: API to application to domain to repository to database
+- Protocol-based interfaces using Python Protocols
+- Generic RAG pipeline that remains domain-agnostic
+- Dependency injection via FastAPI Depends
+- Repository pattern with DTO-based data access
+
+---
+
+## High-Level System Requirements
+
+At a minimum, this system must:
+
+- Persist chat conversations reliably
+- Retrieve historical conversations efficiently
+- Provide a reusable RAG capability for context-aware responses
+- Manage domain-specific content for the NCAA domain, including divisions, schools, and contextual data
+- Interact with LLM providers through a swappable, well-defined interface
+
+These requirements intentionally span multiple concerns:
+
+- application orchestration
+- domain modeling
+- persistence
+- retrieval
+- external integrations
+
+The architecture exists to keep these concerns explicit, isolated, and independently evolvable.
+
+---
+
+## Out of Scope
+
+This project intentionally does not address:
+
+- Authentication or authorization
+- User management or identity workflows
+- Frontend or UI architecture
+- Multi-tenant access control
+- Billing, quotas, or rate limiting
+
+These concerns are excluded to keep the focus on AI system design rather than platform concerns.
+
+---
+
+## Separation of Responsibility in Prompts and Agentic Systems
+
+Separation of responsibility is equally critical in prompt design and agentic implementations.
+
+When responsibilities are unclear, prompts become overloaded. System instructions, domain rules, retrieval context, conversational state, and control flow get collapsed into a single prompt. This makes prompts brittle, opaque, and tightly coupled to implementation details.
+
+This project treats prompts and agents as architectural artifacts rather than string templates.
+
+In practice, this means:
+
+- System prompts define behavior and constraints, not domain facts
+- Domain context is injected deliberately rather than hard-coded into prompts
+- Retrieval provides evidence, not instructions
+- Agents orchestrate capabilities rather than embed logic inside prompts
+
+By separating these concerns, prompts remain stable, agents remain composable, and changes to domain logic or retrieval strategy do not require rewriting instructions.
 
 ---
 
