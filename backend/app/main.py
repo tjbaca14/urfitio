@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 import uvicorn
 from app.chat.routes import chat_router
+from app.common.exception_handlers import register_exception_handlers
 from app.ncaa import divisions_router, schools_router
 from app.startup import ApplicationContainer
 from app.utils import get_logger
@@ -13,7 +14,6 @@ logger = get_logger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Initialize application container
     container = ApplicationContainer()
     await container.initialize()
     app.state.db = container.db
@@ -24,24 +24,24 @@ async def lifespan(app: FastAPI):
 
     yield
 
-    # Clean up resources
     await container.close()
 
 
 app = FastAPI(tags=["UrFitIO"], lifespan=lifespan)
 
-# Configure CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3000",  # Next.js development server
-        "http://127.0.0.1:3000",  # Alternative localhost
-        "http://0.0.0.0:3000",  # 0.0.0.0 binding
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://0.0.0.0:3000",
     ],
     allow_credentials=True,
-    allow_methods=["*"],  # Allow all methods (GET, POST, etc.)
-    allow_headers=["*"],  # Allow all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
+
+register_exception_handlers(app)
 
 
 @app.get("/health")
