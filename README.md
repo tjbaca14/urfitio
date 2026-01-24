@@ -214,7 +214,7 @@ Division (id, division_type)
 **API Routes**:
 ```
 POST /api/v1/chats                 # Generate response (does NOT persist)
-PUT  /api/v1/chats/{id}            # Save/update conversation
+POST  /api/v1/chats/{id}            # Save/update conversation
 GET  /api/v1/chats/{id}            # Retrieve conversation
 GET  /api/v1/chats/user/{user_id}  # List user's conversations
 ```
