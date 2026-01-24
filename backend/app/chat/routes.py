@@ -47,7 +47,7 @@ async def post_chat(
     return response_message
 
 
-@chat_router.put("/{chat_id}", response_model=ChatRequest)
+@chat_router.post("/{chat_id}", response_model=ChatRequest)
 async def save_chat(
     chat_id: str = Path(..., description="Chat identifier"),
     chat_request: ChatRequest = Body(...),
