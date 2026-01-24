@@ -37,14 +37,6 @@ class CacheClient(Protocol):
         """
         ...
 
-    async def get_all(self) -> Dict[str, Any]:
-        """
-        Get all key-value pairs.
-
-        Returns:
-            Dict of all cached key-value pairs (deserialized)
-        """
-        ...
 
     async def set_many(self, items: Dict[str, Any]) -> None:
         """
@@ -115,6 +107,7 @@ class InMemoryCacheClient:
 
 class CacheClientType(StrEnum):
     IN_MEMORY = "IN_MEMORY"
+    REDIS = "REDIS"
 
 
 def create_cache_client(cache_client_type: CacheClientType) -> CacheClient:

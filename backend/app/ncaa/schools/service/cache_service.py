@@ -78,12 +78,3 @@ class SchoolCacheService:
             School context if found, None otherwise
         """
         return await self._cache_client.get(school_name)
-
-    async def get_all_contexts(self) -> Dict[str, str]:
-        """
-        Get all school contexts.
-
-        Returns:
-            Dict mapping school names to contexts
-        """
-        return await self._cache_client.get_all()
