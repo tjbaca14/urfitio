@@ -37,7 +37,6 @@ class CacheClient(Protocol):
         """
         ...
 
-
     async def set_many(self, items: Dict[str, Any]) -> None:
         """
         Set multiple key-value pairs.

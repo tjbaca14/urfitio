@@ -115,7 +115,7 @@ User Question
     ↓
 POST /api/v1/chats (ChatRequest)
     ↓
-ChatApplicationService (orchestrates)
+ChatOrchestrationService (orchestrates)
     ↓
 RAGPipeline.generate()
     ├─→ Retrieve context (SchoolCacheService)
@@ -158,15 +158,15 @@ Return Message
 └─────────────────────────────────────────────────────────┘
 ```
 
-**See**: [Domain Architecture Diagram](docs/diagrams/06-domain-architecture.md)
+**See**: [Domain Architecture Diagram](docs/diagrams/05-domain-architecture.md)
 
 ### Seven Architectural Layers
 
 1. **API Layer**: HTTP boundary (FastAPI routes, Pydantic models)
-2. **Application Layer**: Use case orchestration (ChatApplicationService)
+2. **Application Layer**: Use case orchestration (ChatOrchestrationService)
 3. **Domain Layer**: Business logic (ConversationService, RAGPipeline, SchoolCacheService)
-4. **Repository Layer**: Data access abstraction (ChatRepository, SchoolRepository)
-5. **Database Layer**: Persistence (SQLAlchemy ORM models)
+4. **Adapter Layer**: Translates domain capabilities to concrete implementations
+5. **Repository Layer**: Data access abstraction (ChatRepository, SchoolRepository)
 6. **Integration Layer**: External systems (BaseLLMProvider, AnthropicProvider)
 7. **Infrastructure Layer**: Cross-cutting concerns (DI, HTTP client, cache)
 
@@ -207,7 +207,7 @@ Division (id, division_type)
 **Purpose**: Manage user chat conversations
 
 **Components**:
-- **ChatApplicationService**: Orchestrates chat feature (coordinates RAG + persistence)
+- **ChatOrchestrationService**: Orchestrates chat feature (coordinates RAG + persistence)
 - **ConversationService**: Handles conversation persistence logic
 - **ChatRepository**: Data access for chat history
 
@@ -281,7 +281,7 @@ Generic CRUD with automatic DTO ↔ ORM conversion
 async def get_by_id(session, id_value) -> Optional[TDTO]
 async def get_all(session, limit, offset, **filters) -> List[TDTO]
 async def create(session, dto: TDTO) -> TDTO
-async def update(session, dto: TDTO) -> TDTO
+async def upsert(session, dto: TDTO) -> TDTO
 async def delete(session, id_value) -> bool
 ```
 
@@ -304,11 +304,11 @@ async def delete(session, id_value) -> bool
 **Where**: Throughout (FastAPI Depends)
 **Why**: Loose coupling, easy testing, swappable implementations
 ```python
-async def get_chat_application_service(
+async def get_chat_orchestration_service(
     rag_pipeline: RAGPipeline = Depends(get_rag_pipeline),
     conversation_service: ConversationService = Depends(get_conversation_service),
-) -> ChatApplicationService:
-    return ChatApplicationService(rag_pipeline, conversation_service)
+) -> ChatOrchestrationService:
+    return ChatOrchestrationService(rag_pipeline, conversation_service)
 ```
 
 #### 2. **Factory Pattern**
@@ -354,11 +354,11 @@ class ChatRepository(BaseRepository[ChatHistory, ChatHistoryDTO]):
 ```
 
 #### 7. **Application Service Pattern**
-**Where**: `ChatApplicationService`
+**Where**: `ChatOrchestrationService`
 **Why**: Orchestrates use cases across multiple domain services
 ```python
-class ChatApplicationService:
-    async def generate_response(chat_request):
+class ChatOrchestrationService:
+    async def generate_response(chat_request: ChatRequest):
         # Orchestrates: RAG pipeline (from RAG domain)
         return await self.rag_pipeline.generate(...)
 ```
@@ -373,53 +373,6 @@ class AnthropicProvider:
 ```
 
 **See**: [Detailed Pattern Explanations](docs/diagrams/03-detailed-backend-sequence.md#pattern-catalog-why-each-pattern-exists)
-
----
-
-## Key Architectural Decisions
-
-### 1. NCAA as Unified Domain
-**Decision**: Merge schools and divisions into single `ncaa/` domain
-
-**Rationale**: Schools and divisions are tightly coupled (FK relationship), always deployed together, shared business context.
-
-**Alternative Rejected**: Separate top-level domains - would create artificial boundary.
-
----
-
-### 2. Chat Owns Conversation Persistence
-**Decision**: Move `ConversationService` from `common/` to `chat/`
-
-**Rationale**: Conversation persistence is chat domain concern, not generic infrastructure. Enables chat to evolve independently.
-
-**Alternative Rejected**: Keep in `common/conversation/` as generic - not truly generic, specific to chat use case.
-
----
-
-### 3. RAG Domain Owns RAG Instantiation
-**Decision**: `rag/dependencies.py` assembles RAG pipeline, chat just consumes it
-
-**Rationale**: RAG domain encapsulates implementation details. Chat doesn't need to know about retriever/builder composition.
-
-**Alternative Rejected**: Chat assembles RAG components - leaks implementation details.
-
----
-
-### 4. SchoolContextRetriever in RAG Domain
-**Decision**: Retriever lives in `rag/retrievers/`, not `ncaa/schools/`
-
-**Rationale**: Retriever is RAG infrastructure. NCAA exposes `SchoolCacheService`, retriever consumes it. Follows allowed dependency direction: RAG → NCAA.
-
-**Alternative Rejected**: Put in `ncaa/schools/retrievers/` - would make NCAA depend on RAG concepts.
-
----
-
-### 5. Protocols Over Abstract Base Classes
-**Decision**: Use Python `Protocol` for interfaces
-
-**Rationale**: Structural typing (duck typing with type safety), no inheritance required, easier to add new implementations.
-
-**Alternative Rejected**: Abstract base classes - unnecessary inheritance hierarchy.
 
 ---
 
@@ -450,13 +403,7 @@ class AnthropicProvider:
    - Pluggable components (retrievers, builders, providers)
    - Why generic > special-cased
 
-5. **[Anti-Pattern vs. Proper Abstraction](docs/diagrams/05-comparison-bad-vs-good.md)**
-   - Side-by-side code comparison
-   - Impact analysis (adding features, maintenance)
-   - Testing complexity comparison
-   - Maintenance over time
-
-6. **[Domain Architecture](docs/diagrams/06-domain-architecture.md)**
+5. **[Domain Architecture](docs/diagrams/05-domain-architecture.md)**
    - Four-domain structure detailed
    - Cross-domain dependencies
    - Complete file structure
@@ -473,8 +420,13 @@ class AnthropicProvider:
 **Steps**:
 1. Create `app/integrations/llm/openai.py`:
    ```python
-   class OpenAIProvider(BaseLLMProvider):
-       async def generate(self, messages: List[Message]) -> Message:
+   class OpenAIProvider:
+       async def invoke(
+        self, 
+        messages: List[Message], 
+        temperature: float, 
+        max_tokens: int
+        ) -> Message:
            # OpenAI-specific implementation
            pass
    ```
@@ -487,7 +439,7 @@ class AnthropicProvider:
    }
    ```
 
-3. Update `.env`:
+3. Update env vars:
    ```
    LLM_PROVIDER=openai
    ```
@@ -505,24 +457,26 @@ class AnthropicProvider:
 **Goal**: Add semantic search via vector database
 
 **Steps**:
-1. Create `app/rag/retrievers/vector_retriever.py`:
+1. Create `app/adapters/rag/retrievers/vector_db_retriever.py`:
    ```python
-   class VectorDBRetriever:  # No inheritance needed!
-       async def retrieve(self, query: str) -> Optional[str]:
-           embedding = await self.embedding_model.embed(query)
-           results = await self.vector_db.search(embedding)
-           return results[0].content if results else None
+class VectorDBRetriever:
+    async def retrieve(self, query: str) -> Optional[str]:
+        ...
    ```
 
-2. Update `app/rag/dependencies.py` (1 line):
+2. Update `app/chat/dependencies.py` (1 line):
    ```python
-   # retriever = SchoolContextRetriever(cache)  # Old
-   retriever = VectorDBRetriever(vector_db, embedding_model)  # New
+   # You could intoduce a factory method for even less friction
+    async def get_retriever(
+        vector_db = Depends(get_vector_db),
+        embedding_model = Depends(get_embedding_model),
+    ) -> Retriever:
+        return VectorDBRetriever(vector_db, embedding_model)
    ```
 
 **Files Changed**: 1 new file, 1 line in existing file
 
-**Files NOT Changed**: RAGPipeline, ChatApplicationService, routes
+**Files NOT Changed**: RAGPipeline, ChatOrchestrationService, routes
 
 **Result**: New retrieval strategy without touching core pipeline.
 
@@ -541,43 +495,43 @@ class AnthropicProvider:
 
 #### Example: Testing RAGPipeline
 ```python
+
+@pytest.mark.asyncio
 async def test_rag_pipeline():
-    # Mock dependencies
-    mock_retriever = Mock(spec=Retriever)
+    # Mock retriever
+    mock_retriever = AsyncMock(spec=Retriever)
     mock_retriever.retrieve.return_value = "test context"
 
-    mock_provider = Mock(spec=BaseLLMProvider)
-    mock_provider.generate.return_value = Message(role="assistant", content="test")
-
-    # Test with real pipeline, mocked components
-    pipeline = RAGPipeline(
-        retriever=mock_retriever,
-        prompt_builder=PromptBuilder(),
-        llm_provider=mock_provider,
+    # Mock generator (NOT provider)
+    mock_generator = AsyncMock(spec=Generator)
+    mock_generator.generate.return_value = Message(
+        role="assistant",
+        content="test"
     )
 
-    result = await pipeline.generate([Message(role="user", content="test")])
+    # Real prompt builder
+    prompt_builder = DefaultPromptBuilder()
+
+    # Assemble pipeline
+    pipeline = RAGPipeline(
+        retriever=mock_retriever,
+        prompt_builder=prompt_builder,
+        generator=mock_generator,
+    )
+
+    # Execute
+    result = await pipeline.run(
+        messages=[Message(role="user", content="test")],
+        context_key="any-key",
+    )
+
+    # Assert
     assert result.content == "test"
+
+    # Optional: verify interactions
+    mock_retriever.retrieve.assert_awaited_once_with("any-key")
+    mock_generator.generate.assert_awaited_once()
 ```
-
----
-
-## YouTube Series
-
-This architecture is the foundation for a YouTube series: **"Building Extensible AI Applications"**
-
-### Series Theme
-Traditional software design principles applied to AI/LLM systems - demonstrating how proper abstraction creates maintainable AI applications.
-
-### Episode Topics
-1. **The Cost of Special-Cased Design** - Anti-patterns and their consequences
-2. **Layered Architecture** - Building the foundation
-3. **Generic RAG Pipeline** - Template Method + Protocols
-4. **LLM Provider Abstraction** - Factory + Strategy + Adapter
-5. **Dependency Injection** - Wiring it all together
-6. **Putting It All Together** - Complete request flow + extension points
-
----
 
 ## Project Structure
 
@@ -613,17 +567,12 @@ backend/
 │   │   │   ├── db_models.py
 │   │   │   └── dto.py
 │   │   └── services/
-│   │       ├── chat_application.py
-│   │       └── conversation_store.py
+│   │       ├── chat_orchestration.py
+│   │       └── chat_persistence_service.py
 │   │
 │   ├── rag/                        # RAG DOMAIN
-│   │   ├── dependencies.py
 │   │   ├── factory.py
 │   │   ├── pipeline.py             # RAGPipeline + Protocols
-│   │   ├── prompt_builders/
-│   │   │   └── default.py
-│   │   └── retrievers/
-│   │       └── school_retriever.py
 │   │
 │   ├── common/                     # COMMON DOMAIN
 │   │   ├── dependencies.py
@@ -636,25 +585,28 @@ backend/
 │   │
 │   └── integrations/               # INTEGRATIONS
 │       └── llm/
-│           ├── base.py             # BaseLLMProvider ABC
+│           ├── base.py             # LLMProvider protocol
 │           ├── anthropic.py
 │           ├── factory.py
 │           └── models.py
 │
 ├── docs/                           # DOCUMENTATION
-│   ├── business-requirements.md
-│   ├── episode_1.md
-│   ├── youtube-series-outline.md
+│   ├── episodes/
+│   │   ├── episode_1.md
+│   │   ├── episode_2.md
+│   │   ├── episode_3.md
+│   │   ├── episode_4.md
+│   │   └── episode_5.md
+│   │
 │   └── diagrams/
 │       ├── 01-high-level-sequence.md
 │       ├── 02-layered-architecture.md
 │       ├── 03-detailed-backend-sequence.md
 │       ├── 04-rag-abstraction.md
-│       ├── 05-comparison-bad-vs-good.md
-│       ├── 06-domain-architecture.md
+│       ├── 05-domain-architecture.md
 │       └── images/
 │
-└── README.md                      # You are here
+└── README.md                       # You are here
 ```
 
 ---
@@ -724,6 +676,6 @@ When refactoring:
 
 - **Architecture questions**: See detailed diagrams in `docs/diagrams/`
 - **Pattern questions**: See [Detailed Backend Sequence](docs/diagrams/03-detailed-backend-sequence.md#pattern-catalog-why-each-pattern-exists)
-- **Domain questions**: See [Domain Architecture](docs/diagrams/06-domain-architecture.md)
+- **Domain questions**: See [Domain Architecture](docs/diagrams/05-domain-architecture.md)
 
 ---

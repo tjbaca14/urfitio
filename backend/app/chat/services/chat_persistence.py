@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 logger = get_logger(__name__)
 
 
-class ConversationStore:
+class  ChatPersistenceService:
     """
     Service responsible for managing chat conversation persistence.
     Handles saving, retrieving, and updating chat history.
@@ -33,7 +33,7 @@ class ConversationStore:
             Saved ChatHistoryDTO
         """
         # Save or update (upsert)
-        saved_chat = await self.chat_repo.update(session, chat_history_dto)
+        saved_chat = await self.chat_repo.upsert(session, chat_history_dto)
 
         logger.info(
             f"Conversation saved: {saved_chat.id} for user {saved_chat.user_id}"

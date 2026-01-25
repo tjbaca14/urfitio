@@ -1,6 +1,5 @@
 """Chat repository - data access for chat history."""
 
-from datetime import datetime, timedelta, timezone
 from typing import List, Optional
 
 from app.chat.models.db_models import ChatHistory
