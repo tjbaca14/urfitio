@@ -200,9 +200,8 @@ class StructuredPromptBuilder(PromptBuilder):
 
 **Interface**:
 ```python
-class BaseLLMProvider(ABC):
-    @abstractmethod
-    async def generate(self, messages: List[Message], **kwargs) -> Message:
+class LLMProvider:
+    async def invoke(self, messages: List[Message], **kwargs) -> Message:
         pass
 ```
 
@@ -210,7 +209,7 @@ class BaseLLMProvider(ABC):
 
 #### A. Anthropic Provider (Current)
 ```python
-class AnthropicProvider(BaseLLMProvider):
+class AnthropicProvider:
     async def generate(self, messages, temperature=0.7, max_tokens=1024):
         # Translate to Anthropic format
         system_messages, non_system = self._separate_system_messages(messages)
@@ -234,7 +233,7 @@ class AnthropicProvider(BaseLLMProvider):
 
 #### B. OpenAI Provider (Future)
 ```python
-class OpenAIProvider(BaseLLMProvider):
+class OpenAIProvider:
     async def generate(self, messages, temperature=0.7, max_tokens=1024):
         # OpenAI includes system in messages array
         openai_messages = [
@@ -258,7 +257,7 @@ class OpenAIProvider(BaseLLMProvider):
 
 #### C. Local LLM Provider (Self-hosted)
 ```python
-class LocalLLMProvider(BaseLLMProvider):
+class LocalLLMProvider:
     def __init__(self, model_path: str):
         self.model = load_model(model_path)
 
@@ -327,21 +326,21 @@ Same pipeline, different contexts:
 school_pipeline = RAGPipeline(
     retriever=ContextRetriever(school_cache),
     prompt_builder=PromptBuilder("Use school context to answer"),
-    llm_provider=anthropic_provider,
+    generator=SimpleGenerator(provider=AnthropicProvider),
 )
 
 # Chat about products
 product_pipeline = RAGPipeline(
     retriever=VectorDBRetriever(product_embeddings),
     prompt_builder=PromptBuilder("Use product context to answer"),
-    llm_provider=anthropic_provider,  # Same provider!
+    generator=MultistepProvider(provider=AnthropicProvider), 
 )
 
 # Legal Q&A
 legal_pipeline = RAGPipeline(
     retriever=HybridRetriever(legal_cache, legal_vector_db),
     prompt_builder=StructuredPromptBuilder(),  # Different builder
-    llm_provider=openai_provider,  # Different provider!
+    generator=SimpleGenerator(llm_provider=OpenAIProvider()),  # Different provider!
 )
 ```
 
@@ -377,7 +376,7 @@ Factory reads config → creates components → injects into pipeline
 ### What NOT to do
 
 ```python
-class ChatApplicationService:
+class ChatOrchestrationService:
     async def chat_about_schools(self, school_name: str, message: str):
         # Special-cased for schools
         school = await self.db.get_school(school_name)

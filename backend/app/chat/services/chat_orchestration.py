@@ -5,7 +5,7 @@ from typing import List, Optional
 
 import pytz
 from app.chat.models.dto import ChatHistoryDTO, ChatRequest
-from app.chat.services.conversation_store import ConversationStore
+from app.chat.services.chat_persistence import  ChatPersistenceService
 from app.common.models import Message
 from app.rag.pipeline import RAGPipeline
 from app.utils import get_logger
@@ -14,7 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 logger = get_logger(__name__)
 
 
-class ChatApplicationService:
+class ChatOrchestrationService:
     """
     School recruiting chat service.
 
@@ -29,17 +29,17 @@ class ChatApplicationService:
     def __init__(
         self,
         rag_pipeline: RAGPipeline,
-        conversation_store: ConversationStore,
+        chat_persistence_service: ChatPersistenceService,
     ):
         """
         Initialize chat service.
 
         Args:
             rag_pipeline: RAG pipeline for generating context-aware responses
-            conversation_store: Service for persisting conversations
+            chat_persistence_service: Service for persisting conversations
         """
         self.rag_pipeline = rag_pipeline
-        self.conversation_store = conversation_store
+        self.chat_persistence_service = chat_persistence_service
 
     async def generate_response(
         self,
@@ -79,7 +79,7 @@ class ChatApplicationService:
         Save or update a conversation.
 
         Converts domain ChatRequest to infrastructure ChatHistoryDTO,
-        then persists using ConversationStore.
+        then persists using ChatPersistenceService.
 
         Args:
             session: Database session
@@ -94,7 +94,7 @@ class ChatApplicationService:
         chat_history_dto = self._to_chat_history_dto(chat_request)
 
         # Persist using infrastructure service
-        return await self.conversation_store.save_conversation(
+        return await self.chat_persistence_service.save_conversation(
             session, chat_history_dto
         )
 
@@ -113,7 +113,7 @@ class ChatApplicationService:
         Returns:
             Chat history or None if not found
         """
-        return await self.conversation_store.get_conversation(session, chat_id)
+        return await self.chat_persistence_service.get_conversation(session, chat_id)
 
     async def get_user_conversations(
         self,
@@ -134,7 +134,7 @@ class ChatApplicationService:
         Returns:
             List of chat histories
         """
-        return await self.conversation_store.get_user_conversations(
+        return await self.chat_persistence_service.get_user_conversations(
             session, user_id, limit=limit, offset=offset
         )
 
@@ -154,10 +154,8 @@ class ChatApplicationService:
         messages = [message.model_dump() for message in chat_request.messages]
 
         # Use provided created_date or current time
-        created_date = chat_request.created_date or datetime.now(
-            pytz.timezone("America/Los_Angeles")
-        )
-        updated_date = datetime.now(pytz.timezone("America/Los_Angeles"))
+        created_date = chat_request.created_date or datetime.now(pytz.UTC)
+        updated_date = datetime.now(pytz.UTC)
 
         return ChatHistoryDTO(
             id=chat_request.id,

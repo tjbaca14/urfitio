@@ -162,7 +162,7 @@ class BaseRepository(Generic[TModel, TDTO]):
         await session.refresh(entity)  # Refresh to get DB defaults
         return self._orm_to_dto(entity)
 
-    async def update(self, session: AsyncSession, dto: TDTO) -> TDTO:
+    async def upsert(self, session: AsyncSession, dto: TDTO) -> TDTO:
         """
         Update an existing entity.
 

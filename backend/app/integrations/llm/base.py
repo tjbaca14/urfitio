@@ -12,12 +12,9 @@ class LLMProvider(Protocol):
     - Translating universal Message format to provider-specific format
     - Making HTTP requests to provider APIs
     - Translating provider responses back to universal Message format
-
-    System prompts and business logic should be handled by PromptBuilder,
-    not by providers.
     """
 
-    async def generate(
+    async def invoke(
         self,
         messages: List[Message],
         temperature: float = 0.7,

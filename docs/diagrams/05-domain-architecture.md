@@ -48,7 +48,7 @@ Division (id, division_type)
 
 **Key Components**:
 
-#### **ChatApplicationService**
+#### **ChatOrchestrationService**
 - **Responsibility**: Orchestrates chat feature end-to-end
 - **Collaborates with**:
   - `RAGPipeline` (from RAG domain) for response generation
@@ -153,7 +153,7 @@ class BaseRepository[TModel, TDTO]:
     async def get_by_id(session, id_value, **filters) -> Optional[TDTO]
     async def get_all(session, limit, offset, **filters) -> List[TDTO]
     async def create(session, dto: TDTO) -> TDTO
-    async def update(session, dto: TDTO) -> TDTO
+    async def upsert(session, dto: TDTO) -> TDTO
     async def delete(session, id_value) -> bool
     async def exists(session, id_value, **filters) -> bool
 ```
@@ -361,8 +361,8 @@ backend/
 │   │   │   ├── db_models.py       # ChatHistory, Feedback ORM
 │   │   │   └── dto.py             # ChatRequest, ChatHistoryDTO
 │   │   └── services/
-│   │       ├── chat_application.py     # ChatApplicationService
-│   │       └── conversation_store.py   # ConversationService
+│   │       ├── chat_application.py     # ChatOrchestrationService
+│   │       └── chat_persistence_service.py   # ConversationService
 │   │
 │   ├── rag/                       # RAG DOMAIN
 │   │   ├── dependencies.py        # get_rag_pipeline

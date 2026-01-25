@@ -38,7 +38,7 @@ class AnthropicProvider:
         self.base_url = base_url
         self.http_client = http_client
 
-    async def generate(
+    async def invoke(
         self,
         messages: List[Message],
         temperature: float = 0.7,

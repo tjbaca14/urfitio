@@ -2,7 +2,7 @@ sequenceDiagram
     participant Client
     participant Routes as FastAPI Route<br/>(API Layer)
     participant DI as Dependency<br/>Injection
-    participant ChatApp as ChatApplicationService<br/>(Application)
+    participant ChatApp as ChatOrchestrationService<br/>(Application)
     participant RAG as RAGPipeline<br/>(Generic)
     participant Retriever as SchoolContextRetriever<br/>(Protocol)
     participant Cache as SchoolCacheService<br/>(NCAA Domain)
@@ -18,7 +18,7 @@ sequenceDiagram
     activate Routes
     Note right of Routes: Pydantic validates ChatRequest
 
-    Routes->>DI: Resolve get_chat_application_service()
+    Routes->>DI: Resolve get_chat_orchestration_service()
     activate DI
 
     DI->>DI: get_rag_pipeline()
@@ -27,7 +27,7 @@ sequenceDiagram
     DI->>DI: get_conversation_service()
     Note right of DI: DI: Pre-built at startup
 
-    DI-->>Routes: ChatApplicationService instance
+    DI-->>Routes: ChatOrchestrationService instance
     deactivate DI
 
     Routes->>ChatApp: generate_response(chat_request)

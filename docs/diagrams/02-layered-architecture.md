@@ -54,7 +54,7 @@
 @chat_router.post("", response_model=Message)
 async def post_chat(
     chat_request: ChatRequest,
-    chat_service: ChatApplicationService = Depends(get_chat_application_service),
+    chat_service: ChatOrchestrationService = Depends(get_chat_orchestration_service),
 ) -> Message:
     """Just validates and delegates - no business logic"""
     response_message = await chat_service.generate_response(chat_request)
@@ -80,16 +80,16 @@ async def post_chat(
 - Know about HTTP/API details
 
 **Files**:
-- `app/chat/services/chat_application.py` - ChatApplicationService
+- `app/chat/services/chat_application.py` - ChatOrchestrationService
 - `app/ncaa/schools/service/school_service.py` - SchoolService
 - `app/ncaa/divisions/service.py` - DivisionService
 
 **Example**:
 ```python
-class ChatApplicationService:
-    def __init__(self, rag_pipeline: RAGPipeline, conversation_store: ConversationService):
+class ChatOrchestrationService:
+    def __init__(self, rag_pipeline: RAGPipeline, chat_persistence_service: ConversationService):
         self.rag_pipeline = rag_pipeline
-        self.conversation_store = conversation_store
+        self.chat_persistence_service = chat_persistence_service
 
     async def generate_response(self, chat_request: ChatRequest) -> Message:
         # Orchestrates: RAG generation
@@ -102,7 +102,7 @@ class ChatApplicationService:
     async def save_conversation(self, session: AsyncSession, chat_request: ChatRequest):
         # Orchestrates: Conversation persistence
         chat_history_dto = self._to_chat_history_dto(chat_request)
-        await self.conversation_store.save_conversation(session, chat_history_dto)
+        await self.chat_persistence_service.save_conversation(session, chat_history_dto)
 ```
 
 ---
@@ -129,7 +129,7 @@ class ChatApplicationService:
 - Know about specific LLM providers (uses abstractions)
 
 **Files**:
-- `app/chat/services/conversation_store.py` - ConversationService
+- `app/chat/services/chat_persistence_service.py` - ConversationService
 - `app/ncaa/schools/service/cache_service.py` - SchoolCacheService
 - `app/rag/pipeline.py` - RAGPipeline
 - `app/rag/prompt_builders/default.py` - DefaultPromptBuilder
@@ -147,7 +147,7 @@ class ConversationService:
         self, session: AsyncSession, chat_history_dto: ChatHistoryDTO
     ) -> ChatHistoryDTO:
         # Business logic: Validate, transform, save
-        saved_chat = await self.chat_repo.update(session, chat_history_dto)
+        saved_chat = await self.chat_repo.upsert(session, chat_history_dto)
         logger.info(f"Conversation saved: {saved_chat.id} for user {saved_chat.user_id}")
         return saved_chat
 ```
@@ -403,7 +403,7 @@ Each layer has ONE reason to change:
 High-level modules don't depend on low-level modules:
 - `RAGPipeline` depends on `BaseLLMProvider` (abstraction)
 - NOT on `AnthropicProvider` (concrete implementation)
-- `ChatApplicationService` depends on `RAGPipeline` interface
+- `ChatOrchestrationService` depends on `RAGPipeline` interface
 - NOT on specific retriever implementations
 
 ### Open/Closed Principle (OCP)
@@ -478,7 +478,7 @@ Subclasses should be substitutable:
 
 **Files NOT changed**:
 - Chat routes
-- ChatApplicationService
+- ChatOrchestrationService
 - RAGPipeline
 - ConversationService
 - ChatRepository

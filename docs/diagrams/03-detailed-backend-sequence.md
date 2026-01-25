@@ -9,7 +9,7 @@
 ## Pattern Catalog: Why Each Pattern Exists
 
 ### 1. **Dependency Injection (DI)**
-**Location**: `app/common/dependencies.py`, `app/chat/dependencies.py`, `app/rag/dependencies.py`
+**Location**: `app/common/dependencies.py`, `app/chat/dependencies.py`, `app/ncaa/dependencies.py`
 
 **Problem Solved**:
 - Hard-coded dependencies make testing impossible
@@ -18,13 +18,13 @@
 **How It Works**:
 ```python
 # ❌ BAD: Hard-coded dependency
-class ChatApplicationService:
+class ChatOrchestrationService:
     def __init__(self):
         self.rag_pipeline = RAGPipeline(...)  # Tightly coupled!
         self.llm_provider = AnthropicProvider()
 
 # ✅ GOOD: Dependency injection
-class ChatApplicationService:
+class ChatOrchestrationService:
     def __init__(self, rag_pipeline: RAGPipeline, conversation_service: ConversationService):
         self.rag_pipeline = rag_pipeline
         self.conversation_service = conversation_service
@@ -33,16 +33,16 @@ class ChatApplicationService:
 **Benefits**:
 - Can inject mock RAG pipeline in tests
 - Swap Anthropic → OpenAI by changing one line in DI config
-- No code changes in ChatApplicationService
+- No code changes in ChatOrchestrationService
 
 **FastAPI Implementation**:
 ```python
 # app/chat/dependencies.py
-async def get_chat_application_service(
+async def get_chat_orchestration_service(
     rag_pipeline: RAGPipeline = Depends(get_rag_pipeline),
     conversation_service: ConversationService = Depends(get_conversation_service),
-) -> ChatApplicationService:
-    return ChatApplicationService(rag_pipeline, conversation_service)
+) -> ChatOrchestrationService:
+    return ChatOrchestrationService(rag_pipeline, conversation_service)
 ```
 
 ---
@@ -101,20 +101,19 @@ class LLMProviderFactory:
 **How It Works**:
 ```python
 # Abstract strategy
-class BaseLLMProvider(ABC):
-    @abstractmethod
-    async def generate(self, messages: List[Message]) -> Message:
+class LLMProvider:
+    async def invoke(self, messages: List[Message]) -> Message:
         pass
 
 # Concrete strategy A
-class AnthropicProvider(BaseLLMProvider):
-    async def generate(self, messages: List[Message]) -> Message:
+class AnthropicProvider:
+    async def invoke(self, messages: List[Message]) -> Message:
         # Anthropic-specific implementation
         pass
 
 # Concrete strategy B
-class OpenAIProvider(BaseLLMProvider):
-    async def generate(self, messages: List[Message]) -> Message:
+class OpenAIProvider:
+    async def invoke(self, messages: List[Message]) -> Message:
         # OpenAI-specific implementation
         pass
 ```
@@ -123,19 +122,19 @@ class OpenAIProvider(BaseLLMProvider):
 ```python
 async def generate_response(provider: BaseLLMProvider, messages: List[Message]):
     # Works with ANY provider - polymorphism
-    response = await provider.generate(messages)
+    response = await provider.invoke(messages)
     return response
 ```
 
 **Benefits**:
 - **Open/Closed Principle**: New strategies without modifying existing code
-- **Testability**: Easy to mock BaseLLMProvider
+- **Testability**: Easy to mock LLMProvider
 - **Flexibility**: Switch providers via config, not code changes
 
 ---
 
-### 4. **Protocol Pattern** (Python-specific)
-**Location**: `app/rag/pipeline.py` (Retriever and PromptBuilder protocols)
+### 4. **Stragegy Pattern Pt. 2**
+**Location**: `app/rag/pipeline.py` (Retriever Generator and PromptBuilder protocols)
 
 **Problem Solved**:
 - Need interface without inheritance complexity
@@ -183,40 +182,7 @@ class VectorDBRetriever:  # Also doesn't inherit
 
 ---
 
-### 5. **Builder Pattern**
-**Location**: `app/rag/prompt_builders/default.py`
-
-**Problem Solved**:
-- Complex prompt construction
-- Keep formatting logic in one place
-
-**How It Works**:
-```python
-class DefaultPromptBuilder:
-    DEFAULT_SYSTEM_PROMPT = """Use the context in <data> xml tags..."""
-
-    def __init__(self, system_prompt: Optional[str] = None):
-        self.system_prompt = system_prompt or self.DEFAULT_SYSTEM_PROMPT
-
-    def format_user_message(self, query: str, context: Optional[str]) -> str:
-        """Pure function - no side effects."""
-        if context:
-            return f"Context: <data>{context}</data>\n\nUser query: {query}"
-        return query
-
-    def get_system_prompt(self) -> str:
-        return self.system_prompt
-```
-
-**Benefits**:
-- **Separation of concerns**: Prompt logic separate from generation
-- **Testability**: Pure functions, easy to test
-- **Reusability**: Same builder across different pipelines
-- **Extensibility**: Easy to create variants (FewShotPromptBuilder, StructuredPromptBuilder)
-
----
-
-### 6. **Application Service Pattern**
+### 5. **Application Service Pattern**
 **Location**: `app/chat/services/chat_application.py`
 
 **Problem Solved**:
@@ -225,7 +191,7 @@ class DefaultPromptBuilder:
 
 **How It Works**:
 ```python
-class ChatApplicationService:
+class ChatOrchestrationService:
     """Application Service: Orchestrates use cases across domains"""
 
     def __init__(self, rag_pipeline: RAGPipeline, conversation_service: ConversationService):
@@ -253,58 +219,7 @@ class ChatApplicationService:
 
 ---
 
-### 7. **Adapter Pattern**
-**Location**: `app/integrations/llm/anthropic.py`
-
-**Problem Solved**:
-- External API has incompatible interface
-- Need to translate between formats
-
-**How It Works**:
-```python
-class AnthropicProvider(BaseLLMProvider):
-    def _to_anthropic_format(self, messages: List[Message]) -> List[dict]:
-        """Adapt our Message → Anthropic format."""
-        return [{"role": msg.role, "content": msg.content} for msg in messages]
-
-    def _separate_system_messages(self, messages: List[Message]) -> tuple:
-        """Anthropic-specific: system messages go in separate field."""
-        system_messages = [msg.content for msg in messages if msg.role == "system"]
-        non_system = [msg for msg in messages if msg.role != "system"]
-        return " ".join(system_messages), non_system
-
-    def _parse_response(self, response_data: dict) -> Message:
-        """Adapt Anthropic format → our Message."""
-        content = response_data["content"][0]["text"]
-        return Message(role="assistant", content=content)
-
-    async def generate(self, messages: List[Message]) -> Message:
-        # Adapt request
-        system, non_system = self._separate_system_messages(messages)
-        anthropic_messages = self._to_anthropic_format(non_system)
-
-        # Call external API
-        response_data = await self.http_client.post(
-            url=self.base_url,
-            json={
-                "model": self.model,
-                "system": system,
-                "messages": anthropic_messages,
-            }
-        )
-
-        # Adapt response
-        return self._parse_response(response_data)
-```
-
-**Benefits**:
-- **Internal code uses generic Message**: Rest of app doesn't know about Anthropic
-- **External API changes isolated**: Only adapter changes
-- **Multiple providers**: Each adapter translates to/from provider format
-
----
-
-### 8. **Template Method Pattern**
+### 6. **Template Method Pattern**
 **Location**: `app/rag/pipeline.py`
 
 **Problem Solved**:
@@ -394,7 +309,7 @@ class RAGPipeline:
 
 **Avoided by**:
 - Protocols instead of abstract base classes
-- Composition over inheritance (ChatApplicationService has RAGPipeline)
+- Composition over inheritance (ChatOrchestrationService has RAGPipeline)
 
 ---
 
@@ -432,7 +347,7 @@ class RAGPipeline:
 
 **Result**:
 - **1 new file**, **1 line changed** in existing code
-- **Zero changes** to ChatApplicationService, RAGPipeline, routes, repositories
+- **Zero changes** to ChatOrchestrationService, RAGPipeline, routes, repositories
 - **Tests**: Only need tests for OpenAIProvider, existing tests still pass
 
 This is the power of proper abstraction!
@@ -446,9 +361,9 @@ Request
   ↓
 FastAPI Route
   ↓
-Depends(get_chat_application_service)
+Depends(get_chat_orchestration_service)
   ↓
-get_chat_application_service() in app/chat/dependencies.py
+get_chat_orchestration_service() in app/chat/dependencies.py
   ├─→ Depends(get_rag_pipeline) from app/rag/dependencies.py
   │    ├─→ Depends(get_retriever)
   │    │    └─→ Depends(get_school_cache_service) from app/ncaa/schools/dependencies.py
@@ -479,10 +394,7 @@ get_chat_application_service() in app/chat/dependencies.py
 - **Dependency Injection**: Loose coupling throughout
 - **Factory**: Provider creation
 - **Strategy**: Interchangeable LLM providers
-- **Protocol**: Retriever and PromptBuilder interfaces
-- **Builder**: Prompt formatting
+- **Strategy Pt 2**: Retriever and PromptBuilder interfaces
 - **Application Service**: Use case orchestration
-- **Adapter**: Format translation for external APIs
 - **Template Method**: Fixed RAG algorithm with pluggable steps
 
-This architecture demonstrates how traditional software engineering patterns apply powerfully to AI/LLM applications!

@@ -10,9 +10,9 @@ graph TB
         A1 --> A3
         A1 --> A4
 
-        A2 --> A5[SchoolChatApplicationService<br/>Hard-coded logic]
-        A3 --> A6[ProductChatApplicationService<br/>Duplicated logic]
-        A4 --> A7[LegalChatApplicationService<br/>Copy-pasted logic]
+        A2 --> A5[SchoolChatOrchestrationService<br/>Hard-coded logic]
+        A3 --> A6[ProductChatOrchestrationService<br/>Duplicated logic]
+        A4 --> A7[LegalChatOrchestrationService<br/>Copy-pasted logic]
 
         A5 --> A8[school_repository.get]
         A5 --> A9[Anthropic API call<br/>Hard-coded]

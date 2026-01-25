@@ -1,8 +1,8 @@
 """Chat routes - API endpoints for school recruiting chat."""
 
-from app.chat.dependencies import get_chat_application_service
+from app.chat.dependencies import get_chat_orchestration_service
 from app.chat.models.dto import ChatHistoryDTO, ChatRequest
-from app.chat.services.chat_application import ChatApplicationService
+from app.chat.services.chat_orchestration import ChatOrchestrationService
 from app.common.dependencies import get_db_session
 from app.common.models import Message
 from app.utils import get_logger
@@ -20,8 +20,8 @@ chat_router = APIRouter(
 @chat_router.post("", response_model=Message)
 async def post_chat(
     chat_request: ChatRequest,
-    chat_application_service: ChatApplicationService = Depends(
-        get_chat_application_service
+    chat_orchestration_service: ChatOrchestrationService = Depends(
+        get_chat_orchestration_service
     ),
 ) -> Message:
     """
@@ -41,7 +41,7 @@ async def post_chat(
     """
     logger.info(f"Chat request received: {chat_request.id}")
 
-    response_message = await chat_application_service.generate_response(chat_request)
+    response_message = await chat_orchestration_service.generate_response(chat_request)
 
     logger.info(f"Response generated for chat {chat_request.id}")
     return response_message
@@ -51,8 +51,8 @@ async def post_chat(
 async def save_chat(
     chat_id: str = Path(..., description="Chat identifier"),
     chat_request: ChatRequest = Body(...),
-    chat_application_service: ChatApplicationService = Depends(
-        get_chat_application_service
+    chat_orchestration_service: ChatOrchestrationService = Depends(
+        get_chat_orchestration_service
     ),
     session: AsyncSession = Depends(get_db_session),
 ) -> ChatRequest:
@@ -62,7 +62,7 @@ async def save_chat(
     Args:
         chat_id: Chat identifier (from URL path)
         chat_request: Chat conversation with messages
-        chat_application_service: Service for chat operations
+        chat_orchestration_service: Service for chat operations
         session: Database session
 
     Returns:
@@ -76,7 +76,7 @@ async def save_chat(
         raise HTTPException(status_code=400, detail="Path chat_id must match body id")
 
     logger.info(f"Saving chat: {chat_id}")
-    await chat_application_service.save_conversation(session, chat_request)
+    await chat_orchestration_service.save_conversation(session, chat_request)
 
     return chat_request
 
@@ -84,8 +84,8 @@ async def save_chat(
 @chat_router.get("/{chat_id}", response_model=ChatHistoryDTO)
 async def get_chat(
     chat_id: str = Path(..., description="Chat identifier"),
-    chat_application_service: ChatApplicationService = Depends(
-        get_chat_application_service
+    chat_orchestration_service: ChatOrchestrationService = Depends(
+        get_chat_orchestration_service
     ),
     session: AsyncSession = Depends(get_db_session),
 ) -> ChatHistoryDTO:
@@ -94,7 +94,7 @@ async def get_chat(
 
     Args:
         chat_id: Chat identifier
-        chat_application_service: Service for chat operations
+        chat_orchestration_service: Service for chat operations
         session: Database session
 
     Returns:
@@ -105,7 +105,7 @@ async def get_chat(
     """
     logger.info(f"Retrieving chat: {chat_id}")
 
-    chat = await chat_application_service.get_conversation(session, chat_id)
+    chat = await chat_orchestration_service.get_conversation(session, chat_id)
 
     if not chat:
         raise HTTPException(status_code=404, detail=f"Chat not found: {chat_id}")
@@ -118,8 +118,8 @@ async def get_user_chats(
     user_id: str = Path(..., description="User identifier"),
     limit: int = 10,
     offset: int = 0,
-    chat_application_service: ChatApplicationService = Depends(
-        get_chat_application_service
+    chat_orchestration_service: ChatOrchestrationService = Depends(
+        get_chat_orchestration_service
     ),
     session: AsyncSession = Depends(get_db_session),
 ) -> list[ChatHistoryDTO]:
@@ -130,7 +130,7 @@ async def get_user_chats(
         user_id: User identifier
         limit: Maximum number of chats to return
         offset: Number of chats to skip
-        chat_application_service: Service for chat operations
+        chat_orchestration_service: Service for chat operations
         session: Database session
 
     Returns:
@@ -138,7 +138,7 @@ async def get_user_chats(
     """
     logger.info(f"Retrieving chats for user: {user_id}")
 
-    chats = await chat_application_service.get_user_conversations(
+    chats = await chat_orchestration_service.get_user_conversations(
         session, user_id, limit=limit, offset=offset
     )
 
