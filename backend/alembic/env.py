@@ -1,9 +1,8 @@
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config, pool
-
 from alembic import context
 from app.settings import create_app_settings
+from sqlalchemy import engine_from_config, pool
 
 app_settings = create_app_settings()
 
@@ -71,7 +70,7 @@ def run_migrations_online() -> None:
         context.configure(
             connection=connection,
             target_metadata=target_metadata,
-            version_table_schema="app"
+            version_table_schema="app",
         )
 
         with context.begin_transaction():

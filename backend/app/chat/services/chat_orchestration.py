@@ -5,7 +5,7 @@ from typing import List, Optional
 
 import pytz
 from app.chat.models.dto import ChatHistoryDTO, ChatRequest
-from app.chat.services.chat_persistence import  ChatPersistenceService
+from app.chat.services.chat_persistence import ChatPersistenceService
 from app.common.models import Message
 from app.rag.pipeline import RAGPipeline
 from app.utils import get_logger

@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 logger = get_logger(__name__)
 
 
-class  ChatPersistenceService:
+class ChatPersistenceService:
     """
     Service responsible for managing chat conversation persistence.
     Handles saving, retrieving, and updating chat history.

@@ -83,7 +83,9 @@ async def get_chat_persistence_service(
 
 async def get_chat_orchestration_service(
     rag_pipeline: RAGPipeline = Depends(get_rag_pipeline),
-    chat_persistence_service: ChatPersistenceService = Depends(get_chat_persistence_service),
+    chat_persistence_service: ChatPersistenceService = Depends(
+        get_chat_persistence_service
+    ),
 ) -> ChatOrchestrationService:
     """
     Get ChatOrchestrationService with all dependencies.

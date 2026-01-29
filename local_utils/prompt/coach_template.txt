@@ -1,0 +1,62 @@
+Head Coach Name: {coach_name}
+Division: {division}
+Conference: {conference}
+School: {school}
+Most Recruited States: {most_recruited_states}
+
+Pitcher Attributes:
+Average Fastball Velocity: {avg_fb_velocity} mph
+Minimum Fastball Velocity: {min_fb_velocity} mph
+Maximum Fastball Velocity: {max_fb_velocity} mph
+Average Height: {pitcher_avg_weight} inches
+Average Weight: {pitcher_avg_height} lbs
+
+Position Player Attributes:
+Average Infield Velocity: {avg_inf_velocity} mph
+Average Outfield Velocity: {avg_of_velocity} mph
+Average Infield Exit Velocity: {avg_inf_exit_velocity} mph
+Average First Base Exit Velocity: {avg_1b_exit_velocity} mph
+Average Outfield Exit Velocity: {avg_of_exit_velocity} mph
+Average Catcher Exit Velocity: {avg_c_exit_velocity} mph
+Average Infield 60-Yard Dash Time: {avg_inf_sixty} seconds
+Average First Base 60-Yard Dash Time: {avg_1b_sixty} seconds
+Average Outfield 60-Yard Dash Time: {avg_of_sixty} seconds
+Average Catcher 60-Yard Dash Time: {avg_c_sixty} seconds
+Average Infield Height: {avg_inf_height} inches
+Average First Base Height: {avg_1b_height} inches
+Average Outfield Height: {avg_of_height} inches
+Average Catcher Height: {avg_c_height} inches
+Average Infield Weight: {avg_inf_weight} lbs
+Average First Base Weight: {avg_1b_weight} lbs
+Average Outfield Weight: {avg_of_weight} lbs
+Average Catcher Weight: {avg_c_weight} lbs
+
+National Metrics:
+National Fastball Rank: {national_fb_rank}
+National Infield Velocity Rank: {national_inf_velo_rank}
+National Outfield Velocity Rank: {national_of_velo_rank}
+National Infield Exit Velocity Rank: {national_inf_exit_velo_rank}
+National Outfield Exit Velocity Rank: {national_of_exit_velo_rank}
+National First Base Exit Velocity Rank: {national_1b_exit_velo_rank}
+National Catcher Exit Velocity Rank: {national_c_exit_velo_rank}
+National Infield 60-Yard Dash Rank: {national_inf_sixty_rank}
+National Outfield 60-Yard Dash Rank: {national_of_sixty_rank}
+National First Base 60-Yard Dash Rank: {national_1b_sixty_rank}
+National Catcher 60-Yard Dash Rank: {national_c_sixty_rank}
+National Win-Loss Rank: {national_wl_rank}
+
+Conference Metrics:
+Conference Fastball Rank: {conference_fb_rank}
+Conference Infield Velocity Rank: {conference_inf_velo_rank}
+Conference Outfield Velocity Rank: {conference_of_velo_rank}
+Conference Infield Exit Velocity Rank: {conference_inf_exit_velo_rank}
+Conference Outfield Exit Velocity Rank: {conference_of_exit_velo_rank}
+Conference First Base Exit Velocity Rank: {conference_1b_exit_velo_rank}
+Conference Catcher Exit Velocity Rank: {conference_c_exit_velo_rank}
+Conference Infield 60-Yard Dash Rank: {conference_inf_sixty_rank}
+Conference Outfield 60-Yard Dash Rank: {conference_of_sixty_rank}
+Conference First Base 60-Yard Dash Rank: {conference_1b_sixty_rank}
+Conference Catcher 60-Yard Dash Rank: {conference_c_sixty_rank}
+Conference Win-Loss Rank: {conference_wl_rank}
+
+Current Commits: {current_commits}

@@ -1,0 +1,40 @@
+coach name: the name of the coach
+school: The college university the coach coaches at.
+conference: the conference of the school the school.
+pitcher attributes: The attributes of pitchers recruited by this coach.
+    average fastball velocity: The average fastball velocity of a player recruited by this coach.
+    minimum fastball velocity: The minimum fastball velocity a pitcher has had who was recruited by this coach.
+    maximum fastball velocity: The maximum fastball velocity a pitcher has had who was recurited by this coach.
+    average height: The average height of a pitcher recruited by this coach.
+    average weight: The average weight of a pitcher recruited by this coach.
+    additional context: Players who have a fastball velocity greater than or equal to the average velocity are a better match to be recruited by this coach.
+        If the velocity is below the average and closer to the minimum are less likely to bre recruited by the coach.
+        The height and weight are indicative of the type of builds a coach prefers. This is not always predictive of the ability to be recruited by a coach but in some cases
+        can help a player understand whether their profile matches that of the coach.
+position player attributes: Any position on the basebal field that is not a pitcher.
+    average infield velocity: The average throwing velocity of an infielder (Second Base, Short Stop, or Third Base) for this coach.
+    average outfield velocity: The average throwing velocity of an outfielder (Left Field, Right Field, Center Field) for this coach.
+    average infield exit velocity: exit velocity is when the directional speed in which the ball leaves the players bat. This it the average exit velocity for batted balls for an infielder recruited by this coach.
+    average first base exit velocity: exit velocity is when the directional speed in which the ball leaves the players bat. This it the average exit velocity for batted balls for a first baseman recruited by this coach.
+    average outfield exit velocity: exit velocity is when the directional speed in which the ball leaves the players bat. This it the average exit velocity for batted balls for an outfielder recruited by this coach.
+    average infield 60-yard dash time: The average time in seconds an infielder runs the 60-yard dash recuited by this coach.
+    average first base 60-yard dash time: The average time in seconds a first baseman runs the 60-yard dash recuited by this coach.
+    average outfield 60-yard dash time: The average time in seconds an outfielder runs the 60-yard dash recuited by this coach.
+    average infield height: The average height of an infielder recruited by this coach.
+    average first base height: The average height of a first baseman recruited by this coach.
+    average outfield height: The average height of an outfielder recruited by this coach.
+    average infield weight: The average weight of a pitcher recruited by this coach.
+    average first base weight: The average weight of a first baseman recruited by this coach.
+    average outfield weight: The average weight of an outfielder recruited by this coach.
+national metrics:
+    national fastball rank: The coaches ranking at national level for fastball velocities for pitchers.
+    national infield velocity rank: The coaches ranking at national level for throwing velocities for infielders.
+    national outfield velocity rank: The coaches ranking at national level for throwing velocities for outfielders.
+    national infield exit velocity rank: The coaches ranking at national level for bat to ball exit velocity for infielders.
+    national outfield exit velocity rank: The coaches ranking at national level for bat to ball exit velocity for outfielders.
+    national first base exit velocity rank: The coaches ranking at national level for bat to ball exit velocity for first baseman.
+    national infield 60-yard dash rank: The coaches ranking at a national level for players running 60-yard dash for infielders.
+    national outfield 60-yard dash rank: The coaches ranking at a national level for players running 60-yard dash for outfielders.
+    national first base 60-yard dash rank: The coaches ranking at a national level for players running 60-yard dash for first baseman.
+    national win-loss rank: The coaches ranking at a national level for win-loss percentage.
+current commits: These are the current commits by position and year for a coach.
