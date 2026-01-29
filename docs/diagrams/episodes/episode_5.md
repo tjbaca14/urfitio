@@ -1,4 +1,4 @@
-# Episode 5 – Chat, NCAA, and Extending the System
+# Episode 5 – Chat, NCAA, and Concrete Adaptation
 
 ## Goal
 
@@ -8,7 +8,7 @@ Tie everything together using a real domain and show how extension works.
 
 * Chat as a general capability
 * Conversation ownership & persistence
-* NCAA domain responsibilities
+* Concrete RAG adapters
 * End-to-end request walkthrough
 * Example: adding a new LLM provider
 

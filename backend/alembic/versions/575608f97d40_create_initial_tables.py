@@ -6,11 +6,10 @@ Create Date: 2025-01-12 23:53:33.147873
 
 """
 
-from typing import Sequence, Union
 import os
+from typing import Sequence, Union
 
 import sqlalchemy as sa
-
 from alembic import op
 
 # revision identifiers, used by Alembic.
@@ -23,6 +22,7 @@ depends_on: Union[str, Sequence[str], None] = None
 # Get schema from environment variable, default to 'app'
 SCHEMA = "app"
 
+
 def upgrade():
     op.create_table(
         "chat_history",
@@ -31,7 +31,7 @@ def upgrade():
         sa.Column("messages", sa.JSON()),
         sa.Column("created_date", sa.TIMESTAMP(timezone=True)),
         sa.Column("updated_date", sa.TIMESTAMP(timezone=True)),
-        schema=SCHEMA
+        schema=SCHEMA,
     )
 
     op.create_table(
@@ -41,16 +41,14 @@ def upgrade():
         sa.Column("feedback", sa.String(), index=True),
         sa.Column("category", sa.String()),
         sa.Column("created_date", sa.TIMESTAMP(timezone=True)),
-        schema=SCHEMA
-
+        schema=SCHEMA,
     )
 
     op.create_table(
         "division",
         sa.Column("id", sa.String(), primary_key=True, index=True),
         sa.Column("division_type", sa.String(), nullable=False),
-        schema=SCHEMA
-
+        schema=SCHEMA,
     )
 
     op.create_table(
@@ -61,9 +59,10 @@ def upgrade():
         sa.Column("context", sa.String()),
         sa.Column("created_date", sa.TIMESTAMP(timezone=True)),
         # Foreign key constraint
-        sa.ForeignKeyConstraint(["division_id"], [f"{SCHEMA}.division.id"], ondelete="CASCADE"),
-        schema=SCHEMA
-
+        sa.ForeignKeyConstraint(
+            ["division_id"], [f"{SCHEMA}.division.id"], ondelete="CASCADE"
+        ),
+        schema=SCHEMA,
     )
 
 
